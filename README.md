@@ -1,5 +1,7 @@
 # !!! this is not a production version of the code, assume that everything is broken and use the official repository: https://github.com/techMathGroup/openHFDIB-DEM !!!
 
+just testing modification
+
 # openHFDIB-DEM
 Preparation for porting openHFDIB-DEM to openfoam.com
 
