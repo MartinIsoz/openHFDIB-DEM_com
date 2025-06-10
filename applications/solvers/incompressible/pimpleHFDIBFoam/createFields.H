@@ -109,14 +109,42 @@ scalar pRefValue = 0.0;
 setRefCell(p, pimple.dict(), pRefCell, pRefValue);
 mesh.setFluxRequired(p.name());
 
-#include "readGravitationalAcceleration.H"
+//zlobi readGrav...; OF2406 a jine od .com se lisi zcela od .org nize, ktere je jinak OK
+//#include "readGravitationalAcceleration.H"
+
+//nezlobi registry je OK, na mesh automaticky! Neregistrovat by znamenalo dat do IOobject slovo false.
+Info<< "\nReading g" << endl;
+    uniformDimensionedVectorField g
+    (
+        IOobject
+        (
+            "g",
+            runTime.constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+//Info << g << endl;  //jen vypis pro kontrolu
+
+
 
 singlePhaseTransportModel laminarTransport(U, phi);
 
-autoPtr<incompressible::momentumTransportModel> turbulence
+
+//zlobi
+//autoPtr<incompressible::momentumTransportModel> turbulence
+//(
+//    incompressible::momentumTransportModel::New(U, phi, laminarTransport)
+//);
+
+//nezlobi
+autoPtr<incompressible::turbulenceModel> turbulence
 (
-    incompressible::momentumTransportModel::New(U, phi, laminarTransport)
+    incompressible::turbulenceModel::New(U, phi, laminarTransport)
 );
+
+
 
 #include "createMRF.H"
 #include "createFvOptions.H"

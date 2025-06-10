@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     HFDIBDEMFoam;
+application     HFDIBDEMFoam_new;
 
 startFrom       latestTime;
 
@@ -37,7 +37,7 @@ writeFormat     ascii;
 
 writePrecision  8;
 
-writeCompression uncompressed;
+writeCompression off;
 
 timeFormat      general;
 

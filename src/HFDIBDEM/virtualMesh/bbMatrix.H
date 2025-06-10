@@ -86,7 +86,10 @@ class bbMatrix
     {
         if (!bbMatrix_[sVI[0]][sVI[1]][sVI[2]].valid())
         {
-            bbMatrix_[sVI[0]][sVI[1]][sVI[2]].set(
+
+//zlobi deprecated set, use reset()
+
+            bbMatrix_[sVI[0]][sVI[1]][sVI[2]].reset(
                 new subVolumeProperties(getPointInMesh(sVI))
             );
         }

@@ -66,18 +66,18 @@ bool virtualMesh::detectFirstVolumeInContact(subVolume& sV, bool& startPointFoun
 {
     if (sV.volume() < vMeshInfo_.subVolumeV)
     {
-        if (sV.cVolumeInfo().volumeType_ != volumeType::inside)
+        if (sV.cVolumeInfo().volumeType_ != volumeType::INSIDE)
         {
             sV.cVolumeInfo().volumeType_ = cGeomModel_.getVolumeType(sV, true);
         }
 
-        if (sV.tVolumeInfo().volumeType_ != volumeType::inside)
+        if (sV.tVolumeInfo().volumeType_ != volumeType::INSIDE)
         {
             sV.tVolumeInfo().volumeType_ = tGeomModel_.getVolumeType(sV, false);
         }
 
-        if (sV.cVolumeInfo().volumeType_ == volumeType::outside
-            || sV.tVolumeInfo().volumeType_ == volumeType::outside)
+        if (sV.cVolumeInfo().volumeType_ == volumeType::OUTSIDE
+            || sV.tVolumeInfo().volumeType_ == volumeType::OUTSIDE)
         {
             return false;
         }
@@ -85,25 +85,18 @@ bool virtualMesh::detectFirstVolumeInContact(subVolume& sV, bool& startPointFoun
         boundBox cBBox = boundBox(sV.min(), sV.max());
         boundBox tBBox = boundBox(sV.min(), sV.max());
 
-        if (sV.cVolumeInfo().volumeType_ == volumeType::mixed)
+//zlobi malymi pismeny mixed
+        if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED)
         {
-            if (!cGeomModel_.limitFinalSubVolume(
-                sV,
-                true,
-                cBBox
-            ))
+            if (!cGeomModel_.limitFinalSubVolume(sV,true,cBBox))
             {
                 return false;
             }
         }
-
-        if (sV.tVolumeInfo().volumeType_ == volumeType::mixed)
+//zlobi mixed
+        if (sV.tVolumeInfo().volumeType_ == volumeType::MIXED)
         {
-            if (!tGeomModel_.limitFinalSubVolume(
-                sV,
-                false,
-                tBBox
-            ))
+            if (!tGeomModel_.limitFinalSubVolume(sV,false,tBBox))
             {
                 return false;
             }
@@ -116,21 +109,21 @@ bool virtualMesh::detectFirstVolumeInContact(subVolume& sV, bool& startPointFoun
         return false;
     }
 
-    if (sV.cVolumeInfo().volumeType_ != volumeType::inside)
+    if (sV.cVolumeInfo().volumeType_ != volumeType::INSIDE)
     {
         sV.cVolumeInfo().volumeType_ = cGeomModel_.getVolumeType(sV, true);
     }
 
-    if (sV.tVolumeInfo().volumeType_ != volumeType::inside)
+    if (sV.tVolumeInfo().volumeType_ != volumeType::INSIDE)
     {
         sV.tVolumeInfo().volumeType_ = tGeomModel_.getVolumeType(sV, false);
     }
 
-    if (sV.cVolumeInfo().volumeType_ == volumeType::outside || sV.tVolumeInfo().volumeType_ == volumeType::outside)
+    if (sV.cVolumeInfo().volumeType_ == volumeType::OUTSIDE || sV.tVolumeInfo().volumeType_ == volumeType::OUTSIDE)
     {
         return false;
     }
-    else if (sV.cVolumeInfo().volumeType_ == volumeType::inside && sV.tVolumeInfo().volumeType_ == volumeType::inside)
+    else if (sV.cVolumeInfo().volumeType_ == volumeType::INSIDE && sV.tVolumeInfo().volumeType_ == volumeType::INSIDE)
     {
         return true;
     }
@@ -163,7 +156,7 @@ bool virtualMesh::detectFirstVolumeInContact(subVolume& sV, bool& startPointFoun
 //---------------------------------------------------------------------------//
 scalar virtualMesh::evaluateContact()
 {
-    scalar contactVolume = 0;
+    scalar contactVolume = 0.;
     edgeSubVolumesPoints_.clear();
     contactCenter_ = vector::zero;
 
@@ -187,21 +180,22 @@ void virtualMesh::inspectSubVolume(
 {
     if (sV.volume() < vMeshInfo_.subVolumeV)
     {
-        if (sV.cVolumeInfo().volumeType_ != volumeType::inside)
+//zlobi inside
+        if (sV.cVolumeInfo().volumeType_ != volumeType::INSIDE)
         {
             sV.cVolumeInfo().volumeType_ = cGeomModel_.getVolumeType(sV, true);
         }
 
-        if (sV.tVolumeInfo().volumeType_ != volumeType::inside)
+        if (sV.tVolumeInfo().volumeType_ != volumeType::INSIDE)
         {
             sV.tVolumeInfo().volumeType_ = tGeomModel_.getVolumeType(sV, false);
         }
 
         boundBox cBBox = boundBox(sV.min(), sV.max());
         boundBox tBBox = boundBox(sV.min(), sV.max());
-
+//zlobi mixed
         bool cVolumeTypeMixed = false;
-        if (sV.cVolumeInfo().volumeType_ == volumeType::mixed)
+        if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED)
         {
             cVolumeTypeMixed = true;
 
@@ -209,10 +203,11 @@ void virtualMesh::inspectSubVolume(
                 sV,
                 true,
                 cBBox
-            ) ? volumeType::inside : volumeType::outside;
+//zlobi outside
+            ) ? volumeType::INSIDE : volumeType::OUTSIDE;
         }
 
-        if (sV.tVolumeInfo().volumeType_ == volumeType::mixed)
+        if (sV.tVolumeInfo().volumeType_ == volumeType::MIXED)
         {
             if (cVolumeTypeMixed)
             {
@@ -224,11 +219,11 @@ void virtualMesh::inspectSubVolume(
                 sV,
                 false,
                 tBBox
-            ) ? volumeType::inside : volumeType::outside;
+            ) ? volumeType::INSIDE : volumeType::OUTSIDE;
         }
 
-        if (sV.cVolumeInfo().volumeType_ == volumeType::inside
-            && sV.tVolumeInfo().volumeType_ == volumeType::inside
+        if (sV.cVolumeInfo().volumeType_ == volumeType::INSIDE
+            && sV.tVolumeInfo().volumeType_ == volumeType::INSIDE
             && cBBox.overlaps(tBBox))
         {
             // boundBox as a cross section of cBBox and tBBox
@@ -254,21 +249,21 @@ void virtualMesh::inspectSubVolume(
         return;
     }
 
-    if (sV.cVolumeInfo().volumeType_ != volumeType::inside)
+    if (sV.cVolumeInfo().volumeType_ != volumeType::INSIDE)
     {
         sV.cVolumeInfo().volumeType_ = cGeomModel_.getVolumeType(sV, true);
     }
 
-    if (sV.tVolumeInfo().volumeType_ != volumeType::inside)
+    if (sV.tVolumeInfo().volumeType_ != volumeType::INSIDE)
     {
         sV.tVolumeInfo().volumeType_ = tGeomModel_.getVolumeType(sV, false);
     }
 
-    if (sV.cVolumeInfo().volumeType_ == volumeType::outside || sV.tVolumeInfo().volumeType_ == volumeType::outside)
+    if (sV.cVolumeInfo().volumeType_ == volumeType::OUTSIDE || sV.tVolumeInfo().volumeType_ == volumeType::OUTSIDE)
     {
         return;
     }
-    else if (sV.cVolumeInfo().volumeType_ == volumeType::inside && sV.tVolumeInfo().volumeType_ == volumeType::inside)
+    else if (sV.cVolumeInfo().volumeType_ == volumeType::INSIDE && sV.tVolumeInfo().volumeType_ == volumeType::INSIDE)
     {
         contactVolume += sV.volume();
         contactCenter += (sV.midpoint()*sV.volume());
@@ -288,7 +283,7 @@ void virtualMesh::inspectSubVolume(
         return;
     }
 
-    if (sV.cVolumeInfo().volumeType_ == volumeType::mixed && sV.tVolumeInfo().volumeType_ == volumeType::mixed)
+    if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED && sV.tVolumeInfo().volumeType_ == volumeType::MIXED)
     {
         edgePoints.append(sV.midpoint());
         sV.setAsEdge();
@@ -340,7 +335,7 @@ Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(bool nonConvex)
 //---------------------------------------------------------------------------//
 Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(DynamicPointList edgeSubVolumesPoints)
 {
-// This function is taken from prtContact and just adjustated for higher accuracy
+// This function is taken from prtContact and just adjusted for higher accuracy
     scalar area(0.0);
     vector normalVec(vector::zero);
     scalar tDC(tGeomModel_.getDC());
@@ -438,7 +433,7 @@ Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(DynamicPointList
         forAll (edgeSubVolumesPoints,cell)
         {
             commCellsPosInPlane.append(bestFitPlane.nearestPoint(edgeSubVolumesPoints[cell]));
-		}
+        }
 
         vector q1(1.0, 0.0, 0.0);
         vector q2(0.0, 1.0, 0.0);
@@ -488,10 +483,10 @@ Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(DynamicPointList
                          scalar magnitude = mag(pointsInSection[pointI]-contactCenter_);
                          if (magnitude > distance)
                          {
-							 magnitude = distance;
-							 max = pointsInSection[pointI];
-						 }
-					}
+                             magnitude = distance;
+                             max = pointsInSection[pointI];
+                         }
+                    }
                     commCellsInSections.append(max);
                 }
             }
@@ -518,12 +513,12 @@ Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(DynamicPointList
     if (normalVec == vector::zero)
     {
         normalVec = normalVector;
-	}
+    }
 
-	if ((normalVector & normalVec) < 0)
-	{
-		normalVec = normalVec * (-1);
-	}
+    if ((normalVector & normalVec) < 0)
+    {
+        normalVec = normalVec * (-1);
+    }
 
     Tuple2<scalar,vector> returnValue(area,normalVec);
 
@@ -586,8 +581,8 @@ std::vector<subContact> virtualMesh::findsubContacts(subVolume& sV)
     }
 
     std::vector<subContact> returnValue;
-    if (sV.cVolumeInfo().volumeType_ != volumeType::outside
-        && sV.tVolumeInfo().volumeType_ != volumeType::outside)
+    if (sV.cVolumeInfo().volumeType_ != volumeType::OUTSIDE
+        && sV.tVolumeInfo().volumeType_ != volumeType::OUTSIDE)
     {
         returnValue.push_back(subContact());
         returnValue.back().addSubVolume(std::make_shared<subVolume>(sV));

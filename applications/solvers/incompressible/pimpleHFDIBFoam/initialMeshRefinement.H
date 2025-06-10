@@ -22,8 +22,8 @@ for (label level=0;level<maxRefinementLevel+1;level++)
         {
             #include "meshCourantNo.H"
         }
-
-        lambda *= 0;
+//zlobi nula bez tecky
+        lambda *= 0.;
         HFDIBDEM.recreateBodies(lambda,refineF);
     }
 }

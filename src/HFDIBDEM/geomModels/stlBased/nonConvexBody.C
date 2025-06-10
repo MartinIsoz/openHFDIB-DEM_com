@@ -205,7 +205,8 @@ void nonConvexBody::createImmersedBody
 
     // gather partial volume from other processors
     Pstream::gatherList(ibPartialVolume_, 0);
-    Pstream::scatter(ibPartialVolume_, 0);
+    // Pstream::scatter(ibPartialVolume_, 0);
+    Pstream::broadcast(ibPartialVolume_, 0); // not sure recomended by compiler 
 
     for (label i = 0; i < ibPartialVolume_.size(); i++)
     {

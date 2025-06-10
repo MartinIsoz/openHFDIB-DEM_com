@@ -45,8 +45,8 @@ subVolume::subVolume
 :
 treeBoundBox(bb),
 parentSV_(nullptr),
-cVolumeInfo_(volumeType::unknown),
-tVolumeInfo_(volumeType::unknown)
+cVolumeInfo_(volumeType::UNKNOWN),
+tVolumeInfo_(volumeType::UNKNOWN)
 {
 }
 

@@ -70,9 +70,11 @@ Contributors
 // #include "virtualMesh.H"
 
 #include "verletList.H"
-//OS Time effitiency Testing
+
+//OS Time efficiency Testing
 #include "clockTime.H"
-//OS Time effitiency Testing
+
+
 namespace Foam
 {
 
@@ -207,7 +209,7 @@ namespace Foam
     }
 
     void writeFirtsTimeBodiesInfo();
-    
+
     void setSolverInfo();
 
  };

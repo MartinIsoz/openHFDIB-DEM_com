@@ -15,7 +15,9 @@ if (mesh_.nGeometricD() < 3)
     {
         bodyOperation_ = 1;
 
-        Vel_   = immersedDict_.subDict("prescribedTransBody").lookup("velocity");
+//zlobi
+//      Vel_   = immersedDict_.subDict("prescribedTransBody").lookup("velocity");
+        Vel_   = vector(immersedDict_.subDict("prescribedTransBody").lookup("velocity"));
 
         InfoH << iB_Info << bodyName_ << " is a freely rotating body with prescribed linear velocity." << endl;
     }
@@ -23,7 +25,10 @@ if (mesh_.nGeometricD() < 3)
     {
         bodyOperation_ = 2;
 
-        Axis_ = immersedDict_.subDict("prescribedRotBody").lookup("axis");
+//zlobi
+//      Axis_ = immersedDict_.subDict("prescribedRotBody").lookup("axis");
+        Axis_ = vector(immersedDict_.subDict("prescribedRotBody").lookup("axis"));
+
         omega_  = readScalar(
                     immersedDict_.subDict("prescribedRotBody").lookup("omega")
                 );
@@ -34,9 +39,12 @@ if (mesh_.nGeometricD() < 3)
     {
         bodyOperation_ = 3;
 
-        Vel_   = immersedDict_.subDict("prescribedTransRotBody").lookup("velocity");
-        Axis_ = immersedDict_.subDict("prescribedTransRotBody").lookup("axis");
-        omega_  = readScalar(
+//zlobi
+//      Vel_   = immersedDict_.subDict("prescribedTransRotBody").lookup("velocity");
+//      Axis_  = immersedDict_.subDict("prescribedTransRotBody").lookup("axis");
+        Vel_   = vector(immersedDict_.subDict("prescribedTransRotBody").lookup("velocity"));
+        Axis_  = vector(immersedDict_.subDict("prescribedTransRotBody").lookup("axis"));
+        omega_ = readScalar(
                     immersedDict_.subDict("prescribedTransRotBody").lookup("omega")
                 );
 
@@ -46,8 +54,11 @@ if (mesh_.nGeometricD() < 3)
     {
         bodyOperation_ = 4;
 
-        Vel_   = immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("velocity");
-        Axis_ = immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("axis");
+//zlobi, je chyba
+//      Vel_  = immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("velocity");
+//      Axis_ = immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("axis");
+        Vel_  = vector(immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("velocity"));
+        Axis_ = vector(immersedDict_.subDict("prescribedTransFixedAxisRotBody").lookup("axis"));
 
         InfoH << iB_Info << bodyName_ << " has prescribed movement and axis of rotation." << endl;
     }
@@ -59,11 +70,13 @@ if (mesh_.nGeometricD() < 3)
         {
             if(immersedDict_.subDict("fullyCoupledBody").found("velocity"))
             {
-                Vel_ = immersedDict_.subDict("fullyCoupledBody").lookup("velocity");
+//zlobi, chce vector
+                Vel_ = vector(immersedDict_.subDict("fullyCoupledBody").lookup("velocity"));
             }
             if(immersedDict_.subDict("fullyCoupledBody").found("axis"))
-            {            
-                Axis_ = immersedDict_.subDict("fullyCoupledBody").lookup("axis");
+            {
+//zlobi, chce vector
+                Axis_ = vector(immersedDict_.subDict("fullyCoupledBody").lookup("axis"));
             }
             if(immersedDict_.subDict("fullyCoupledBody").found("omega"))
             {
@@ -131,24 +144,39 @@ if (mesh_.nGeometricD() < 3)
     // set up body geometry
     geomModel_->setIntSpan(intSpan_);
     geomModel_->setSdBasedLambda(sdBasedLambda_);
-    geomModel_->setRhoS(immersedDict_.lookup("rho"));
+
+//zlobi jako chyba
+//  geomModel_->setRhoS(immersedDict_.lookup("rho"));
+
+//nezlobi
+    Info << "chce cist rho" << endl;
+    dimensionedScalar rho(immersedDict_.lookup("rho"));
+    Info << "rho " << rho << endl;
+    geomModel_->setRhoS(rho);
+
+
+
 
     string material = word(immersedDict_.lookup("material"));
 
     if(ibIntp.valid())
     {
-        intpInfo_.set(ibIntp().createIntpInfo(
+
+//zlobi set, use reset
+        intpInfo_.reset(ibIntp().createIntpInfo(
             mesh_,
             geomModel_
         ));
     }
 
-    ibContactClass_.set(new ibContactClass(
+//zlobi deprecated set, use reset
+    ibContactClass_.reset(new ibContactClass(
         geomModel_,
         material
     ));
 
-    ibCntVars_.set(new ibContactVars
+//zlobi set, use reset
+    ibCntVars_.reset(new ibContactVars
     (
         bodyId_,
         Vel_,
@@ -159,7 +187,8 @@ if (mesh_.nGeometricD() < 3)
         geomModel_->getRhoS()
     ));
 
-    wallCntInfo_.set(new wallContactInfo
+//zlobi set, use reset
+    wallCntInfo_.reset(new wallContactInfo
     (
         ibContactClass_(),
         ibCntVars_()

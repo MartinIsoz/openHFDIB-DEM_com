@@ -87,9 +87,9 @@ bool virtualMeshWall::detectFirstContactPoint()
             }
             auxToCheck().append(bbMatrix_.cornerNeighbourSubVolumes(nextToCheck()[sV]));
         }
-        const autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr()); // removing const
+        nextToCheck.reset(auxToCheck.ptr()); //set -> reset
+        auxToCheck = std::move(helpPtr); // adding std::move
     }
     return false;
 }
@@ -127,9 +127,9 @@ bool virtualMeshWall::detectFirstFaceContactPoint()
             }
             auxToCheck().append(bbMatrix_.faceNeighbourSubVolumes(nextToCheck()[sV]));
         }
-        const autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck = std::move(helpPtr);
     }
     return false;
 }
@@ -165,9 +165,9 @@ scalar virtualMeshWall::evaluateContact()
                 auxToCheck->append(bbMatrix_.faceNeighbourSubVolumes(nextToCheck()[sV]));
             }
         }
-        const autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck = std::move(helpPtr);
     }
     if (volumeCount > 0)
     {
@@ -237,9 +237,9 @@ label virtualMeshWall::getInternalSV()
             }
         }
 
-        const autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck = std::move(helpPtr);
     }
     return innerSVCount;
 }

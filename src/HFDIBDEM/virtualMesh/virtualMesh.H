@@ -67,13 +67,13 @@ struct virtualMeshInfo
     {
         if (vMeshInfo.startingPoint.valid())
         {
-            startingPoint.set(new point(vMeshInfo.startingPoint()));
+
+//zlobi deprecated set, use reset
+            startingPoint.reset(new point(vMeshInfo.startingPoint()));
         }
     }
 
-    virtualMeshInfo(
-        boundBox& bBox,
-        scalar subVolumeV):
+    virtualMeshInfo(boundBox& bBox, scalar subVolumeV):
     sV(bBox),
     subVolumeV(subVolumeV)
     {}
@@ -93,7 +93,9 @@ struct virtualMeshInfo
     {
         if (!startingPoint.valid())
         {
-            startingPoint.set(new point(sV.midpoint()));
+
+//zlobi deprecated set, use reset
+            startingPoint.reset(new point(sV.midpoint()));
         }
 
         return startingPoint();
@@ -116,10 +118,10 @@ class virtualMesh
 {
     private:
 
-    typedef DynamicList<label> DynamicLabelList;
+    typedef DynamicList<label>  DynamicLabelList;
     typedef DynamicList<scalar> DynamicScalarList;
     typedef DynamicList<vector> DynamicVectorList;
-    typedef DynamicList<point> DynamicPointList;
+    typedef DynamicList<point>  DynamicPointList;
     typedef HashSet<vector,Hash<vector>> vectorHashSet;
 
     geomModel& cGeomModel_;

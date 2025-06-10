@@ -284,8 +284,12 @@ void leastSquaresIntInfo::getIbCellsFaces
     DynamicLabelList& ibFaces = getIbFaces();
     DynamicList<bool>& ibFaceFlips = getIbFacesFlips();
 
-    const unallocLabelList& owner = mesh_.owner();
-    const unallocLabelList& neighbour = mesh_.neighbour();
+//zlobi
+//    const unallocLabelList& owner = mesh_.owner();
+//    const unallocLabelList& neighbour = mesh_.neighbour();
+
+    const labelUList& owner = mesh_.owner();
+    const labelUList& neighbour = mesh_.neighbour();
 
     forAll(neighbour, faceI)
     {

@@ -41,7 +41,7 @@ void convexBody::createImmersedBody
     Field<label>& octreeField,
     List<labelList>& cellPoints
 )
-{    
+{
     // clear old list contents
     intCells_[Pstream::myProcNo()].clear();
     surfCells_[Pstream::myProcNo()].clear();
@@ -73,7 +73,7 @@ void convexBody::createImmersedBody
     }
     else
     {
-        cachedNeighbours_ = new HashTable<const labelList&, label, Hash<label>>;
+        cachedNeighbours_.reset(new HashTable<labelList, label, Hash<label>>);
     }
 
     HashTable<bool, label, Hash<label>> cellInside(tableSize);
@@ -110,9 +110,10 @@ void convexBody::createImmersedBody
                 }
             }
         }
-        const autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
+//zlobi deprecated set, use reset
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck = std::move(helpPtr);
     }
 
     DynamicLabelList keyToErase;
@@ -189,9 +190,10 @@ label convexBody::getCellInBody
                 }
             }
         }
-        const autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
-        nextToCheck.set(auxToCheck.ptr());
-        auxToCheck = helpPtr;
+        autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
+//zlobi deprecated set, use reset
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck =std::move(helpPtr);
     }
     return -1;
 }

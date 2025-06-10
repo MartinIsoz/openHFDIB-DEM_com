@@ -418,19 +418,26 @@ List<DynamicList<vector>> wallContactInfo::detectPossibleSMContact
                     }
                 }
             }
-            const autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr());
-            nextToCheck.set(auxToCheck.ptr());
-            auxToCheck = helpPtr;
+            autoPtr<DynamicVectorList> helpPtr(nextToCheck.ptr()); // deleted const ...
+//zlobi deprecated set(), use reset()
+            nextToCheck.reset(auxToCheck.ptr());
+            // auxToCheck = helpPtr;
+            auxToCheck = std::move(helpPtr);
         }
         if(subContactElements().size() > 0)
         {
             baseSubContactList.append(subContactElements());
         }
-        for (auto it = contactElements().begin(); it != contactElements().end();)
+        DynamicVectorList& elems = contactElements();
+        for (auto it = elems.begin(); it != elems.end();)
         {
+            label idx = it - elems.begin();  // pointer arithmetic = index
+
             if (checkedOctreeFaces.found(*it))
             {
-                it = contactElements().erase(it);
+                // it = contactElements().remove(it);
+                elems.remove(idx);           // removes and shifts
+                it = elems.begin() + idx;    // refresh pointer
             }
             else
             {

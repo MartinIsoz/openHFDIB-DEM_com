@@ -85,7 +85,9 @@ class spectatorMesh
     {
         if (!centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].valid())
         {
-            centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].set(
+//zlobi warning deprecated set(), use reset()
+
+            centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].reset(
                 new sMProperties(getCentroidPoint(sVI))
             );
         }
@@ -96,7 +98,7 @@ class spectatorMesh
     {
         if (!vertexMatrix_[sVI[0]][sVI[1]][sVI[2]].valid())
         {
-            vertexMatrix_[sVI[0]][sVI[1]][sVI[2]].set(
+            vertexMatrix_[sVI[0]][sVI[1]][sVI[2]].reset(
                 new sMProperties(getVertexPoint(sVI))
             );
         }
@@ -127,7 +129,7 @@ class spectatorMesh
     List<vector> faceNeighbourElements
     (
         vector& elementIndex
-    );    
+    );
 
     List<vector> elementVertexIndexies
     (

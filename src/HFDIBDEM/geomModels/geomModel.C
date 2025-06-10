@@ -206,6 +206,7 @@ DynamicList<label> geomModel::getPotentSurfCells
 
         if(cellInside[cCell])
         {
+//zlobi nasledujici radka
             const labelList& neigh = cachedNeighbours_()[cCell];
 
             bool anyOutside = false;
@@ -233,7 +234,9 @@ DynamicList<label> geomModel::getPotentSurfCells
         {
             potentSurfCells.append(cCell);
         }
+
     }
+
     return potentSurfCells;
 }
 //---------------------------------------------------------------------------//

@@ -6,8 +6,15 @@ tmp<fvVectorMatrix> tUEqn
 (
     fvm::ddt(U) + fvm::div(phi, U)
   + MRF.DDt(U)
-  + turbulence->divDevSigma(U)
+
+//zlobi divDevSigma
+//  + turbulence->divDevSigma(U)
+
+//nezlobi
+    + turbulence->divDevReff(U)
+
  ==
+
     fvOptions(U)
 
 );

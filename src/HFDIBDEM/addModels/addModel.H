@@ -41,7 +41,7 @@ Contributors
 
 #include "dictionary.H"
 #include "fvCFD.H"
-// #include "fvMesh.H"
+#include "fvMesh.H"
 #include "triSurfaceMesh.H"
 
 #include "geomModel.H"

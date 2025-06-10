@@ -41,6 +41,11 @@ Contributors
 #include "interpolationInfo.H"
 #include "intPoint.H"
 
+//zlobi, kdyz neni
+#include "processorPolyPatch.H"
+
+
+
 namespace Foam
 {
     class lineIntInfo

@@ -32,10 +32,66 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+
+// /*
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
+//#include "openHFDIBDEM.H"
+//#include "singlePhaseTransportModel.H"            //v Make options zmeneno
+//#include "kinematicMomentumTransportModel.H"      // obsahuje 5 nize
+
+// ze simpleFoam  tady pridano a funguje
 #include "singlePhaseTransportModel.H"
-#include "kinematicMomentumTransportModel.H"
+#include "turbulentTransportModel.H"
+#include "simpleControl.H"
+#include "fvOptions.H"
+
+// toto bylo puvodne a nezlobilo, po zakomentovani preklad stale OK
+// zakom #include "IncompressibleMomentumTransportModel.H"
+//#include "laminarModel.H"
+//#include "RASModel.H"
+//#include "LESModel.H"
+//#include "transportModel.H"
+
+#include "pimpleControl.H"
+#include "CorrectPhi.H"
+#include "fvOptions.H"
+#include "localEulerDdtScheme.H"
+#include "fvcSmooth.H"
+
+#include "triSurfaceMesh.H"   //muze byt tady, nahore bylo OK
+#include "openHFDIBDEM.H"
+#include "clockTime.H"
+
+/*
+// Toto funguje pro preklad take, prevzato z predelane dubnove verze 2024
+
+#include "fvCFD.H"
+#include "dynamicFvMesh.H"
+#include "openHFDIBDEM.H"
+//zlobi
+//#include "singlePhaseTransportModel.H"
+//#include "kinematicMomentumTransportModel.H"
+
+
+//zlobi to vyse, ale ve 2406 je
+//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/transportModels/incompressible/lnInclude/transportModel.H" 
+//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/transportModels/incompressible/lnInclude/singlePhaseTransportModel.H" 
+
+// ze simpleFoam
+#include "singlePhaseTransportModel.H"
+#include "turbulentTransportModel.H"
+#include "simpleControl.H"
+#include "fvOptions.H"
+
+
+//zlobi
+//#include "laminarModel.H"
+//#include "RASModel.H"
+//#include "LESModel.H"
+//#include "transportModel.H"
+
+
 #include "pimpleControl.H"
 #include "CorrectPhi.H"
 #include "fvOptions.H"
@@ -43,8 +99,8 @@ Description
 #include "fvcSmooth.H"
 
 #include "triSurfaceMesh.H"
-#include "openHFDIBDEM.H"
-#include "clockTime.H"
+*/
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -75,7 +131,7 @@ int main(int argc, char *argv[])
     openHFDIBDEM  HFDIBDEM(mesh);
     HFDIBDEM.initialize(lambda,U,refineF,maxRefinementLevel,runTime.timeName());
     #include "initialMeshRefinement.H"
-    
+
     if(HFDIBDEM.getRecordFirstTime())
     {
         HFDIBDEM.setRecordFirstTime(false);
@@ -88,7 +144,8 @@ int main(int argc, char *argv[])
     scalar DEMTime_(0.0);
     scalar suplTime_(0.0);
 
-    while (pimple.run(runTime))
+//zlobi    while (pimple.run(runTime))
+    while (runTime.run())
     {
         #include "readDyMControls.H"
 
@@ -109,7 +166,7 @@ int main(int argc, char *argv[])
         clockTime createBodiesTime; // OS time efficiency testing
         HFDIBDEM.createBodies(lambda,refineF);
         suplTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
-        
+
         clockTime preUpdateBodiesTime; // OS time efficiency testing
         HFDIBDEM.preUpdateBodies(lambda,f);
         suplTime_ += preUpdateBodiesTime.timeIncrement(); // OS time efficiency testing
@@ -118,7 +175,9 @@ int main(int argc, char *argv[])
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
         {
-            if (pimple.firstPimpleIter() || moveMeshOuterCorrectors)
+//zlobi
+//          if (pimple.firstPimpleIter() || moveMeshOuterCorrectors)
+            if (pimple.firstIter() || moveMeshOuterCorrectors)
             {
                 mesh.update();
 
@@ -142,8 +201,10 @@ int main(int argc, char *argv[])
                     {
                         #include "meshCourantNo.H"
                     }
+//zlobi bez tecky
+//                  lambda *= 0;
+                    lambda *= 0.;
 
-                    lambda *= 0;
                     HFDIBDEM.recreateBodies(lambda,refineF);
                 }
 

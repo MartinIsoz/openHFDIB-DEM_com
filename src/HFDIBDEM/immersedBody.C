@@ -33,6 +33,13 @@ Contributors
 #include "fvMatrices.H"
 #include "geometricOneField.H"
 
+
+//zlobi, kdyz nema
+//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/OpenFOAM/meshes/polyMesh/polyPatches/constraint/processor/processorPolyPatch.H"
+#include "processorPolyPatch.H"
+
+
+
 #include "interpolationCellPoint.H"
 #include "interpolationCell.H"
 #include "meshSearch.H"
@@ -770,7 +777,10 @@ void immersedBody::updateVectorField
 )
 {
     // check dictionary for parameters (only noSlip allowed)
-    word BC = immersedDict_.subDict(VName).lookup("BC");
+
+//zlobi
+//  word BC = immersedDict_.subDict(VName).lookup("BC");
+    word BC = word(immersedDict_.subDict(VName).lookup("BC"));
 
     List<DynamicLabelList> intLists;
     List<DynamicLabelList> surfLists;

@@ -26,7 +26,9 @@ if (pimple.consistent())
     HbyA -= (rAU - rAtU())*fvc::grad(p);
 }
 
-if (pimple.nCorrPiso() <= 1)
+//zlobi Piso
+//if (pimple.nCorrPiso() <= 1)
+if (pimple.nCorrPISO() <= 1)
 {
     tUEqn.clear();
 }

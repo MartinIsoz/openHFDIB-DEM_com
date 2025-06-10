@@ -59,7 +59,30 @@ volScalarField refineF
 
 #include "createPhi.H"
 
-#include "readGravitationalAcceleration.H"
+//zlobi  je z OF .org
+//#include "readGravitationalAcceleration.H"
+
+
+
+//nezlobi registry OK, na mesh automaticky!
+
+uniformDimensionedVectorField g
+(
+    IOobject
+    (
+        "g",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+
+
+
+
+
+
 
 IOdictionary transportProperties
 (

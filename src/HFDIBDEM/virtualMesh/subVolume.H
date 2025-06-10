@@ -49,28 +49,58 @@ namespace Foam
 struct ibSubVolumeInfo
 {
     ibSubVolumeInfo():
-        volumeType_(volumeType::unknown)
+        volumeType_(volumeType::UNKNOWN)
     {}
 
     ibSubVolumeInfo(volumeType vType)
     {
         switch(vType)
         {
-            case volumeType::unknown:
-            case volumeType::mixed:
-                volumeType_ = volumeType::unknown;
+            case volumeType::UNKNOWN:
+            case volumeType::MIXED:
+                volumeType_ = volumeType::UNKNOWN;
                 break;
-            case volumeType::inside:
-                volumeType_ = volumeType::inside;
+            case volumeType::INSIDE:
+                volumeType_ = volumeType::INSIDE;
                 break;
-            case volumeType::outside:
-                volumeType_ = volumeType::outside;
+            case volumeType::OUTSIDE:
+                volumeType_ = volumeType::OUTSIDE;
                 break;
         }
     }
 
     volumeType volumeType_;
     autoPtr<labelList> shapesIn_;
+
+    //move constructor
+    // ibSubVolumeInfo(ibSubVolumeInfo&&) = default;
+    //move asssignment operator
+    // ibSubVolumeInfo& operator=(ibSubVolumeInfo&&) = default;
+
+    ibSubVolumeInfo(const ibSubVolumeInfo& other)
+    :
+        volumeType_(other.volumeType_),
+        shapesIn_(other.shapesIn_.valid()
+            ? autoPtr<labelList>(new labelList(*other.shapesIn_))
+            : nullptr)
+    {}
+
+    ibSubVolumeInfo& operator=(const ibSubVolumeInfo& other)
+    {
+        if (this != &other)
+        {
+            volumeType_ = other.volumeType_;
+            shapesIn_.clear();
+            if (other.shapesIn_.valid())
+            {
+                shapesIn_.reset(new labelList(*other.shapesIn_));
+            }
+        }
+        return *this;
+    }
+
+    ibSubVolumeInfo(ibSubVolumeInfo&&) = default;
+    ibSubVolumeInfo& operator=(ibSubVolumeInfo&&) = default;
 };
 
 /*---------------------------------------------------------------------------*\
@@ -124,6 +154,18 @@ class subVolume : public treeBoundBox
 
     void setAsEdge();
     bool isEdge() const;
+    
+    //move constructor
+    // subVolume(subVolume&&) = default;
+    //move asssignment operator
+    // subVolume& operator=(subVolume&&) = default;
+
+    subVolume(const subVolume& other) = default;
+    subVolume& operator=(const subVolume& other) = default;
+
+    subVolume(subVolume&&) = default;
+    subVolume& operator=(subVolume&&) = default;
+
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

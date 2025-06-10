@@ -171,7 +171,9 @@ recordSimulation_(readBool(HFDIBDEMDict_.lookup("recordSimulation")))
 
     if(demDic.found("rotationModel"))
     {
-        word rotModel = demDic.lookup("rotationModel");
+//zlobi
+//      word rotModel = demDic.lookup("rotationModel");
+        word rotModel = word(demDic.lookup("rotationModel"));
         if(rotModel == "chen2012")
         {
             contactModelInfo::setRotationModel(0);
@@ -184,14 +186,14 @@ recordSimulation_(readBool(HFDIBDEMDict_.lookup("recordSimulation")))
         {
             Info << "Rotation Model not recognized, setting to default mindlin1953" << endl;
             contactModelInfo::setRotationModel(1);
-        }    
+        }
     }
     else
     {
         Info << "Rotation Model not recognized, setting to default mindlin1953" << endl;
         contactModelInfo::setRotationModel(1);
     }
-    
+
 
     Info <<" -- Coefficient for characteristic Lenght Lc is set to : "<< contactModelInfo::getLcCoeff() << endl;
 
@@ -199,9 +201,10 @@ recordSimulation_(readBool(HFDIBDEMDict_.lookup("recordSimulation")))
     List<word> patchNames = patchDic.toc();
     forAll(patchNames, patchI)
     {
-        word patchMaterial = patchDic.subDict(patchNames[patchI]).lookup("material");
-        vector patchNVec = patchDic.subDict(patchNames[patchI]).lookup("nVec");
-        vector planePoint = patchDic.subDict(patchNames[patchI]).lookup("planePoint");
+//zlobi bez word, vector
+        word patchMaterial = word(patchDic.subDict(patchNames[patchI]).lookup("material"));
+        vector patchNVec   = vector(patchDic.subDict(patchNames[patchI]).lookup("nVec"));
+        vector planePoint  = vector(patchDic.subDict(patchNames[patchI]).lookup("planePoint"));
 
         wallPlaneInfo::wallPlaneInfo_insert(
             patchNames[patchI],
@@ -222,9 +225,10 @@ recordSimulation_(readBool(HFDIBDEMDict_.lookup("recordSimulation")))
         List<word> cyclicPatchNames = cyclicPatchDic.toc();
         forAll(cyclicPatchNames, patchI)
         {
-            vector patchNVec = cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("nVec");
-            vector planePoint = cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("planePoint");
-            word neighbourPatch = cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("neighbourPatch");
+//zlobi bez word, vector
+            vector patchNVec    = vector(cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("nVec"));
+            vector planePoint   = vector(cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("planePoint"));
+            word neighbourPatch = word(cyclicPatchDic.subDict(cyclicPatchNames[patchI]).lookup("neighbourPatch"));
 
             cyclicPlaneInfo::insert(
                 cyclicPatchNames[patchI],
@@ -238,7 +242,8 @@ recordSimulation_(readBool(HFDIBDEMDict_.lookup("recordSimulation")))
 
     if (HFDIBDEMDict_.found("geometricD"))
     {
-        geometricD = HFDIBDEMDict_.lookup("geometricD");
+//zlobi bez vector
+        geometricD = vector(HFDIBDEMDict_.lookup("geometricD"));
     }
     else
     {
@@ -312,13 +317,17 @@ void openHFDIBDEM::initialize
 
         if(HFDIBinterpDict_.found("method"))
         {
-            word intMethod = HFDIBinterpDict_.lookup("method");
+//zlobi
+//          word intMethod = HFDIBinterpDict_.lookup("method");
+            word intMethod = word(HFDIBinterpDict_.lookup("method"));
 
             if(intMethod == "leastSquares")
             {
                 dictionary lsCoeffsDict
                     = HFDIBinterpDict_.subDict("leastSquaresCoeffs");
-                ibInterp_.set(new leastSquaresInt(
+
+//zlobi deprecated set, use reset
+                ibInterp_.reset(new leastSquaresInt(
                     mesh_,
                     readScalar(lsCoeffsDict.lookup("distFactor")),
                     readScalar(lsCoeffsDict.lookup("radiusFactor")),
@@ -328,7 +337,8 @@ void openHFDIBDEM::initialize
             }
             else if(intMethod == "line")
             {
-                ibInterp_.set(new lineInt(HFDIBinterpDict_));
+//zlobi deprecated set, use reset
+                ibInterp_.reset(new lineInt(HFDIBinterpDict_));
             }
         }
     }
@@ -338,7 +348,10 @@ void openHFDIBDEM::initialize
     // initialize addModels
     addModels_.setSize(bodyNames_.size());
     immersedBodies_.setSize(0);                                         //on the fly creation
-    refineF *= 0;
+
+//zlobi bez tecky
+//  refineF *= 0;
+    refineF *= 0.;
     recomputeM0_ = recomputeM0;
 
     if(!startTime0)
@@ -347,7 +360,9 @@ void openHFDIBDEM::initialize
             mkDir(recordOutDir_);
         else
         {
-            fileNameList entries(readDir(recordOutDir_,fileType::directory)); // OF version 8, For version 6 use fileName::DIRECTORY instead of fileType::directory
+//zlobi
+//          fileNameList entries(readDir(recordOutDir_,fileType::directory)); // OF version 8, For version 6 use fileName::DIRECTORY instead of fileType::directory
+            fileNameList entries(readDir(recordOutDir_,fileName::DIRECTORY)); // OF version 8, For version 6 a 2406 use fileName::DIRECTORY
             scalar runTimeS(stod(runTime));
             forAll(entries,entry)
             {
@@ -561,7 +576,9 @@ void openHFDIBDEM::recreateBodies
     volScalarField& refineF
 )
 {
-    refineF *= 0;
+//zlobi bez tecky
+//  refineF *= 0;
+    refineF *= 0.;
     preCalculateCellPoints();
     forAll (addModels_,modelI)
     {
@@ -1243,7 +1260,9 @@ void openHFDIBDEM::restartSimulation
         // check if the immersedDict_ contains bodyGeom
         if (HFDIBDEMDict_.subDict(bodyName).found("bodyGeom"))
         {
-            word input = HFDIBDEMDict_.subDict(bodyName).lookup("bodyGeom");
+//zlobi
+//          word input = HFDIBDEMDict_.subDict(bodyName).lookup("bodyGeom");
+            word input = word(HFDIBDEMDict_.subDict(bodyName).lookup("bodyGeom"));
             bodyGeom = input;
             InfoH << iB_Info << "Found bodyGeom for "
                 << bodyName << ", the body is: " << bodyGeom << endl;
@@ -1267,7 +1286,9 @@ void openHFDIBDEM::restartSimulation
         }
         else if(bodyGeom == "sphere")
         {
-            vector startPosition = bodyDict.subDict("sphere").lookup("position");
+//zlobi
+//          vector startPosition = bodyDict.subDict("sphere").lookup("position");
+            vector startPosition = vector(bodyDict.subDict("sphere").lookup("position"));
             scalar radius = readScalar(bodyDict.subDict("sphere").lookup("radius"));
 
             bodyGeomModel = std::make_shared<sphereBody>(mesh_,startPosition,radius,thrSurf);
