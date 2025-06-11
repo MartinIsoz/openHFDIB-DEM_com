@@ -85,9 +85,7 @@ class spectatorMesh
     {
         if (!centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].valid())
         {
-//zlobi warning deprecated set(), use reset()
-
-            centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].reset(
+            centroidMatrix_[sVI[0]][sVI[1]][sVI[2]].reset(              //OF.com: set -> reset
                 new sMProperties(getCentroidPoint(sVI))
             );
         }

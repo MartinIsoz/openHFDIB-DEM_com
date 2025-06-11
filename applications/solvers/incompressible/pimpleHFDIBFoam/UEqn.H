@@ -5,12 +5,7 @@ MRF.correctBoundaryVelocity(U);
 tmp<fvVectorMatrix> tUEqn
 (
     fvm::ddt(U) + fvm::div(phi, U)
-  + MRF.DDt(U)
-
-//zlobi divDevSigma
-//  + turbulence->divDevSigma(U)
-
-//nezlobi
+    + MRF.DDt(U)
     + turbulence->divDevReff(U)
 
  ==
@@ -24,9 +19,27 @@ UEqn.relax();
 
 fvOptions.constrain(UEqn);
 
-if (pimple.momentumPredictor())
+volScalarField UA(UEqn.A());
+HFDIBDEM.interpolateIB(U,Ui,lambda);
+Ui.correctBoundaryConditions();
+f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+f.correctBoundaryConditions();  
+
+//~ if (pimple.momentumPredictor())
+//~ {
+    //~ solve(UEqn == -fvc::grad(p) + f);
+
+    //~ fvOptions.correct(U);
+//~ }
+
+for (int i = 0; i < fDirectForcingIter; i++)
 {
     solve(UEqn == -fvc::grad(p) + f);
 
     fvOptions.correct(U);
+    
+    HFDIBDEM.interpolateIB(U,Ui,lambda);
+    Ui.correctBoundaryConditions();
+    f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+    f.correctBoundaryConditions(); 
 }

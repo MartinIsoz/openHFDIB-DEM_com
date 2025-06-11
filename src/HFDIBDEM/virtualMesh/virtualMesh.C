@@ -85,15 +85,13 @@ bool virtualMesh::detectFirstVolumeInContact(subVolume& sV, bool& startPointFoun
         boundBox cBBox = boundBox(sV.min(), sV.max());
         boundBox tBBox = boundBox(sV.min(), sV.max());
 
-//zlobi malymi pismeny mixed
-        if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED)
+        if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED)          //OF.com: mixed, inside, outside -> MIXED, INSIDE, OUTSIDE
         {
             if (!cGeomModel_.limitFinalSubVolume(sV,true,cBBox))
             {
                 return false;
             }
         }
-//zlobi mixed
         if (sV.tVolumeInfo().volumeType_ == volumeType::MIXED)
         {
             if (!tGeomModel_.limitFinalSubVolume(sV,false,tBBox))
@@ -180,7 +178,6 @@ void virtualMesh::inspectSubVolume(
 {
     if (sV.volume() < vMeshInfo_.subVolumeV)
     {
-//zlobi inside
         if (sV.cVolumeInfo().volumeType_ != volumeType::INSIDE)
         {
             sV.cVolumeInfo().volumeType_ = cGeomModel_.getVolumeType(sV, true);
@@ -193,7 +190,6 @@ void virtualMesh::inspectSubVolume(
 
         boundBox cBBox = boundBox(sV.min(), sV.max());
         boundBox tBBox = boundBox(sV.min(), sV.max());
-//zlobi mixed
         bool cVolumeTypeMixed = false;
         if (sV.cVolumeInfo().volumeType_ == volumeType::MIXED)
         {
@@ -203,7 +199,6 @@ void virtualMesh::inspectSubVolume(
                 sV,
                 true,
                 cBBox
-//zlobi outside
             ) ? volumeType::INSIDE : volumeType::OUTSIDE;
         }
 
@@ -335,7 +330,7 @@ Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(bool nonConvex)
 //---------------------------------------------------------------------------//
 Tuple2<scalar,vector> virtualMesh::get3DcontactNormalAndSurface(DynamicPointList edgeSubVolumesPoints)
 {
-// This function is taken from prtContact and just adjusted for higher accuracy
+    // This function is taken from prtContact and just adjusted for higher accuracy
     scalar area(0.0);
     vector normalVec(vector::zero);
     scalar tDC(tGeomModel_.getDC());

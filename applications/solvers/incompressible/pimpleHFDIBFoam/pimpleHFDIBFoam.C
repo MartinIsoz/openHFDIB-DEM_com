@@ -32,65 +32,13 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-
-// /*
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
-//#include "openHFDIBDEM.H"
-//#include "singlePhaseTransportModel.H"            //v Make options zmeneno
-//#include "kinematicMomentumTransportModel.H"      // obsahuje 5 nize
 
-// ze simpleFoam  tady pridano a funguje
 #include "singlePhaseTransportModel.H"
 #include "turbulentTransportModel.H"
 #include "simpleControl.H"
 #include "fvOptions.H"
-
-// toto bylo puvodne a nezlobilo, po zakomentovani preklad stale OK
-// zakom #include "IncompressibleMomentumTransportModel.H"
-//#include "laminarModel.H"
-//#include "RASModel.H"
-//#include "LESModel.H"
-//#include "transportModel.H"
-
-#include "pimpleControl.H"
-#include "CorrectPhi.H"
-#include "fvOptions.H"
-#include "localEulerDdtScheme.H"
-#include "fvcSmooth.H"
-
-#include "triSurfaceMesh.H"   //muze byt tady, nahore bylo OK
-#include "openHFDIBDEM.H"
-#include "clockTime.H"
-
-/*
-// Toto funguje pro preklad take, prevzato z predelane dubnove verze 2024
-
-#include "fvCFD.H"
-#include "dynamicFvMesh.H"
-#include "openHFDIBDEM.H"
-//zlobi
-//#include "singlePhaseTransportModel.H"
-//#include "kinematicMomentumTransportModel.H"
-
-
-//zlobi to vyse, ale ve 2406 je
-//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/transportModels/incompressible/lnInclude/transportModel.H" 
-//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/transportModels/incompressible/lnInclude/singlePhaseTransportModel.H" 
-
-// ze simpleFoam
-#include "singlePhaseTransportModel.H"
-#include "turbulentTransportModel.H"
-#include "simpleControl.H"
-#include "fvOptions.H"
-
-
-//zlobi
-//#include "laminarModel.H"
-//#include "RASModel.H"
-//#include "LESModel.H"
-//#include "transportModel.H"
-
 
 #include "pimpleControl.H"
 #include "CorrectPhi.H"
@@ -99,7 +47,8 @@ Description
 #include "fvcSmooth.H"
 
 #include "triSurfaceMesh.H"
-*/
+#include "openHFDIBDEM.H"
+#include "clockTime.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -168,15 +117,13 @@ int main(int argc, char *argv[])
         suplTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
 
         clockTime preUpdateBodiesTime; // OS time efficiency testing
-        HFDIBDEM.preUpdateBodies(lambda,f);
+        HFDIBDEM.preUpdateBodies(lambda);
         suplTime_ += preUpdateBodiesTime.timeIncrement(); // OS time efficiency testing
 
         clockTime pimpleRunClockTime; // OS time efficiency testing
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
         {
-//zlobi
-//          if (pimple.firstPimpleIter() || moveMeshOuterCorrectors)
             if (pimple.firstIter() || moveMeshOuterCorrectors)
             {
                 mesh.update();
@@ -201,9 +148,8 @@ int main(int argc, char *argv[])
                     {
                         #include "meshCourantNo.H"
                     }
-//zlobi bez tecky
-//                  lambda *= 0;
-                    lambda *= 0.;
+
+                    lambda *= 0.0;
 
                     HFDIBDEM.recreateBodies(lambda,refineF);
                 }
@@ -228,7 +174,18 @@ int main(int argc, char *argv[])
         CFDTime_ += pimpleRunClockTime.timeIncrement();
         Info << "updating HFDIBDEM" << endl;
         clockTime postUpdateBodiesTime;
-        HFDIBDEM.postUpdateBodies(lambda,f);
+        
+        // --- compute viscous forces and update coupling
+        fDragPress = fvc::grad(p);
+        fDragVisc  = -fvc::div(turbulence->devReff());
+        for (label pass=0; pass<=fDragSmoothingIter; pass++)
+        {
+            fDragPress = fvc::average(fvc::interpolate(fDragPress));
+            fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
+            fDragPress.correctBoundaryConditions();
+            fDragVisc.correctBoundaryConditions();
+        }
+        HFDIBDEM.postUpdateBodies(lambda,fDragPress,fDragVisc);
         suplTime_ += postUpdateBodiesTime.timeIncrement();
 
 

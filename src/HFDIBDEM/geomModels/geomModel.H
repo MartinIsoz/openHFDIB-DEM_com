@@ -109,7 +109,7 @@ namespace Foam
         bool    sdBasedLambda_;
         boundBox curMeshBounds_;
 
-//zlobi asi cachedNeighbours
+        //cachedNeighbours_ may cost problems in OF.com
         // autoPtr<HashTable<const labelList&, label, Hash<label>>> cachedNeighbours_;
         autoPtr<HashTable<labelList, label, Hash<label>>> cachedNeighbours_;
         // HashTable<labelList, label, Hash<label>> cachedNeighbours_;
@@ -265,7 +265,7 @@ namespace Foam
         {
             InfoH << iB_Info << "13-- geomModelMessage-- "
                 << "notIplemented"<<endl;
-            return volumeType::UNKNOWN; //unknown;
+            return volumeType::UNKNOWN;
         }
 
         virtual scalar getDC()
@@ -309,8 +309,7 @@ namespace Foam
         virtual void setOwner()
         {
             Pstream::gatherList(ibPartialVolume_, 0);
-//zlobi deprecated            Pstream::scatter(ibPartialVolume_, 0);
-            Pstream::broadcast(ibPartialVolume_, 0);
+            Pstream::broadcast(ibPartialVolume_, 0);                    //OF.com scatter -> broadcast
             for (label i = 0; i < ibPartialVolume_.size(); i++)
             {
                 if (ibPartialVolume_[i] == max(ibPartialVolume_))

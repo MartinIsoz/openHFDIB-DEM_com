@@ -73,10 +73,8 @@ void geomModel::calculateGeometricalProperties
 {
     //vector CoMOld  = CoM_;
     M_      = scalar(0);
-    //CoM_    = vector::zero;
     setCoM();
     I_      = symmTensor::zero;
-    //vector tmpCom(vector::zero);
     //reset cellCount
     nCells_ = label(0);
 
@@ -104,10 +102,8 @@ void geomModel::calculateGeometricalPropertiesParallel
 {
     //vector CoMOld  = CoM_;
     M_      = scalar(0);
-    //CoM_    = vector::zero;
     setCoM();
     I_      = symmTensor::zero;
-    //vector tmpCom(vector::zero);
     //reset cellCount
     nCells_ = label(0);
 
@@ -206,8 +202,7 @@ DynamicList<label> geomModel::getPotentSurfCells
 
         if(cellInside[cCell])
         {
-//zlobi nasledujici radka
-            const labelList& neigh = cachedNeighbours_()[cCell];
+            const labelList& neigh = cachedNeighbours_()[cCell];        //may cost problems in OF.com compilation/computation
 
             bool anyOutside = false;
             forAll(neigh, neighI)

@@ -120,6 +120,8 @@ namespace Foam
 
         // forces acting on the particle due to the fluid
         forces FCoupling_;
+        forces FCouplingOld_;
+        scalar couplingHistCoef_;
 
         // forces acting on the particle due to the contact
         forces FContact_;
@@ -153,7 +155,8 @@ namespace Foam
         void updateCoupling
         (
             volScalarField& body,
-            volVectorField& f
+            volVectorField& fPress,
+            volVectorField& fVisc
         );
 
         // auxiliary octree variables
@@ -363,7 +366,8 @@ namespace Foam
         void postPimpleUpdateImmersedBody
         (
             volScalarField& body,
-            volVectorField& f
+            volVectorField& fPress,
+            volVectorField& fVisc
         );
 
         // compute the mean and maximal body courant number (based on
@@ -404,7 +408,8 @@ namespace Foam
         void pimpleUpdate
         (
             volScalarField& body,
-            volVectorField& f
+            volVectorField& fPress,
+            volVectorField& fVisc
         );
 
         const bool& getSDBasedLambda() const
@@ -502,6 +507,11 @@ namespace Foam
         }
 
         vectorField getUatIbPoints();
+        
+        void resetCouplingHistory()
+        {
+            couplingHistCoef_ = 1.0;
+        }
     };
 }
 #endif

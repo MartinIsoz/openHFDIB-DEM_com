@@ -80,7 +80,6 @@ addedOnTimeLevel_(0),
 partPerAddTemp_(0),
 
 zoneName_(),
-//nize pridano vector u min/maxBound!
 minBound_(vector::zero),
 maxBound_(vector::zero),
 
@@ -173,9 +172,7 @@ void addModelDistribution::init()
     }
 
     Pstream::gatherList(procZoneVols, 0);
-//zlobi deprecated scatter, use broadcast
-//  Pstream::scatter(procZoneVols, 0);
-    Pstream::broadcast(procZoneVols, 0);
+    Pstream::broadcast(procZoneVols, 0);                                //OF.com compatibility: scatter -> broadcast
 
 
     scalar zoneVol(0);
@@ -477,8 +474,6 @@ scalar addModelDistribution::checkLambdaFraction(const volScalarField& body)
 //---------------------------------------------------------------------------//
 scalar addModelDistribution::returnRandomAngle()
 {
-//zlobi scalar01
-//  scalar ranNum = 2.0*randGen_.scalar01() - 1.0;
     scalar ranNum = 2.0*randGen_.sample01<scalar>() - 1.0;
     scalar angle  = ranNum*Foam::constant::mathematical::pi;
     return angle;
@@ -491,8 +486,6 @@ vector addModelDistribution::returnRandomRotationAxis()
 
     for (int i=0;i<3;i++)
     {
-//zlobi scalar01
-//      ranNum = randGen_.scalar01();
         ranNum = randGen_.sample01<scalar>();
         axisOfRotation[i] = ranNum;
     }
@@ -527,9 +520,6 @@ Tuple2<label, scalar> addModelDistribution::returnScaleFactor()
     {
         totalMissParts += missingParticles[size];
     }
-
-//zlobi scalar01
-//  label randomMissPart = floor(randGen_.scalar01()*totalMissParts);
     label randomMissPart = floor(randGen_.sample01<scalar>()*totalMissParts);
     label missingPart(0);
     forAll (missingParticles,size)
@@ -541,9 +531,6 @@ Tuple2<label, scalar> addModelDistribution::returnScaleFactor()
             break;
         }
     }
-
-//zlobi scalar01
-//  scalar factor(particleSize_[missingPart - 1] + (particleSize_[missingPart] - particleSize_[missingPart - 1]) * randGen_.scalar01());
     scalar factor(particleSize_[missingPart - 1] + (particleSize_[missingPart] - particleSize_[missingPart - 1]) * randGen_.sample01<scalar>());
     factor *= convertToMeters_/stlBaseSize_;
 

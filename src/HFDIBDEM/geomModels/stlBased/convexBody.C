@@ -111,8 +111,7 @@ void convexBody::createImmersedBody
             }
         }
         autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
-//zlobi deprecated set, use reset
-        nextToCheck.reset(auxToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());                            //OF.com: set -> reset
         auxToCheck = std::move(helpPtr);
     }
 
@@ -191,7 +190,6 @@ label convexBody::getCellInBody
             }
         }
         autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
-//zlobi deprecated set, use reset
         nextToCheck.reset(auxToCheck.ptr());
         auxToCheck =std::move(helpPtr);
     }

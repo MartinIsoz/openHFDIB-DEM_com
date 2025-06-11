@@ -6,7 +6,7 @@ echo "Working from directory: $rootDir"
 
 # compile the library
 cd src/HFDIBDEM
-wclean
+#~ wclean
 wmake libso
 cd $rootDir
 

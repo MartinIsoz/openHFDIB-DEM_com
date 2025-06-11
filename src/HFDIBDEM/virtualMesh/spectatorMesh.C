@@ -45,11 +45,18 @@ matrixSize_(matrixSize),
 bBox_(bBox),
 charCellSize_(charCellSize)
 {
+    // Note (MI): here, implementation was changed by PK, probrably
+    //            for clarity? -> ASK
+    
     // InfoH << DEM_Info << "SM is Alive" << endl;
     // centroidMatrix_ = List<List<List<autoPtr<sMProperties>>>>(matrixSize[0],
     //     List<List<autoPtr<sMProperties>>>(matrixSize[1],
     //     List<autoPtr<sMProperties>>(matrixSize[2])));
-
+    
+    // vertexMatrix_ = List<List<List<autoPtr<sMProperties>>>>(matrixSize[0]+1,
+    //     List<List<autoPtr<sMProperties>>>(matrixSize[1]+1,
+    //     List<autoPtr<sMProperties>>(matrixSize[2]+1)));
+    
     centroidMatrix_.setSize(matrixSize_[0]);
     vertexMatrix_.setSize(matrixSize_[0]);
     forAll(centroidMatrix_, i)
@@ -68,10 +75,6 @@ charCellSize_(charCellSize)
             vertexMatrix_[i][j].setSize(matrixSize_[2]);
         }
     }          
-    // vertexMatrix_ = List<List<List<autoPtr<sMProperties>>>>(matrixSize[0]+1,
-    //     List<List<autoPtr<sMProperties>>>(matrixSize[1]+1,
-    //     List<autoPtr<sMProperties>>(matrixSize[2]+1)));
-    // InfoH << DEM_Info << "SM is Alive I " << endl;
 }
 spectatorMesh::~spectatorMesh()
 {

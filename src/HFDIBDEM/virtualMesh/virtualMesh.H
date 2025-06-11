@@ -67,9 +67,7 @@ struct virtualMeshInfo
     {
         if (vMeshInfo.startingPoint.valid())
         {
-
-//zlobi deprecated set, use reset
-            startingPoint.reset(new point(vMeshInfo.startingPoint()));
+            startingPoint.reset(new point(vMeshInfo.startingPoint()));  //OF.com: set -> reset
         }
     }
 
@@ -93,8 +91,6 @@ struct virtualMeshInfo
     {
         if (!startingPoint.valid())
         {
-
-//zlobi deprecated set, use reset
             startingPoint.reset(new point(sV.midpoint()));
         }
 

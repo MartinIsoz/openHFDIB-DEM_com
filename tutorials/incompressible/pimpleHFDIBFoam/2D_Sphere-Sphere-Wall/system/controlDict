@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     pimpleHFDIBFoam_new;
+application     pimpleHFDIBFoam;
 
 startFrom       latestTime; //startTime;
 

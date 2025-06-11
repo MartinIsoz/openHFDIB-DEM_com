@@ -222,7 +222,8 @@ label virtualMeshWall::getInternalSV()
                     neighbourSubVolumes.append(bbMatrix_.cornerNeighbourSubVolumes(nextToCheck()[sV]));
                     forAll(neighbourSubVolumes,nSV)
                     {
-                        isNotOnEdge *= bbMatrix_[neighbourSubVolumes[nSV]].isCBody;
+                        //~ isNotOnEdge *= bbMatrix_[neighbourSubVolumes[nSV]].isCBody;//OF.com issues warning
+                        isNotOnEdge &= bbMatrix_[neighbourSubVolumes[nSV]].isCBody;
                     }
                     if(!isNotOnEdge)
                     {

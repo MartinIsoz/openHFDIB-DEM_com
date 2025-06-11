@@ -129,17 +129,6 @@ std::shared_ptr<geomModel> addModelOnceFromFile::addBody
         addSTL(line);
     }
 
-    // volScalarField helpBodyField_ = body;
-    // geomModel_->createImmersedBody(
-    //     helpBodyField_,
-    //     octreeField_,
-    //     cellPoints_
-    // );
-
-    // bool canAddBodyI = !isBodyInContact(immersedBodies);
-
-    // reduce(canAddBodyI, andOp<bool>());
-
     bodyAdded_ = true;
     return geomModel_->getCopy();
 }

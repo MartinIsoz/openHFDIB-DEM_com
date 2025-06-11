@@ -26,8 +26,6 @@ if (pimple.consistent())
     HbyA -= (rAU - rAtU())*fvc::grad(p);
 }
 
-//zlobi Piso
-//if (pimple.nCorrPiso() <= 1)
 if (pimple.nCorrPISO() <= 1)
 {
     tUEqn.clear();
@@ -78,17 +76,29 @@ fvc::correctUf(Uf, U, phi);
 // Make the fluxes relative to the mesh motion
 fvc::makeRelative(phi, U);
 
-HFDIBDEM.updateFSCoupling(lambda,f);
+//~ fDragPress = fvc::grad(p);
+//~ fDragVisc  = -fvc::div(turbulence->devReff());
+//~ for (label pass=0; pass<=fDragSmoothingIter; pass++)
+//~ {
+    //~ fDragPress = fvc::average(fvc::interpolate(fDragPress));
+    //~ fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
+    //~ fDragPress.correctBoundaryConditions();
+    //~ fDragVisc.correctBoundaryConditions();
+//~ }
+
+//~ HFDIBDEM.updateFSCoupling(lambda,fDragPress,fDragVisc);                 //MI: dubious line
 HFDIBDEM.interpolateIB(U,Ui,lambda);
 
 //Ui -= (Ui - U)*(1-lambda);
 
 forAll(surface, sI)
 {
-    if (lambda[sI] > 0)
+    if (lambda[sI] > thrSurf)
         surface[sI] = 1;
     else
         surface[sI] = 0;
 }
 
-f += 0.8*surface*(Ui - U)/runTime.deltaT();
+//~ f += 0.8*surface*(Ui - U)/runTime.deltaT();
+f = surface*(UA*Ui - UEqn.H() + fvc::grad(p));
+f.correctBoundaryConditions();

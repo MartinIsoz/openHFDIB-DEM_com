@@ -67,7 +67,6 @@ fieldValue_(0),
 addedOnTimeLevel_(0),
 startTimeValue_(mesh_.time().value()),
 
-//zlobi -  minBound, maxBound v lookup dole musi byt jako vector
 zoneName_(),
 minBound_(vector::zero),
 maxBound_(vector::zero),
@@ -526,8 +525,6 @@ scalar addModelOnceScatter::checkLambdaFraction(const volScalarField& body)
 //---------------------------------------------------------------------------//
 scalar addModelOnceScatter::returnRandomAngle()
 {
-//zlobi scalar01
-//  scalar ranNum = 2.0*randGen_.scalar01() - 1.0;
     scalar ranNum = 2.0*randGen_.sample01<scalar>() - 1.0;
     scalar angle  = ranNum*Foam::constant::mathematical::pi;
     return angle;
@@ -535,8 +532,6 @@ scalar addModelOnceScatter::returnRandomAngle()
 //---------------------------------------------------------------------------//
 scalar addModelOnceScatter::returnRandomScale()
 {
-//zlobi scalar01
-//  scalar ranNum       = randGen_.scalar01();
     scalar ranNum       = randGen_.sample01<scalar>();
     scalar scaleDiff    = maxScale_ - minScale_;
     scalar scaleFactor  = minScale_ + ranNum*scaleDiff;
@@ -552,8 +547,6 @@ vector addModelOnceScatter::returnRandomRotationAxis()
 
     for (int i=0;i<3;i++)
     {
-//zlobi sample01
-//      ranNum = randGen_.scalar01();
         ranNum = randGen_.sample01<scalar>();
         axisOfRotation[i] = ranNum;
     }

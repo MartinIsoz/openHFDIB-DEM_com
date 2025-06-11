@@ -56,9 +56,7 @@ bodySurfMesh_
 stlPath_(stlPath)
 {
     historyPoints_ = bodySurfMesh_.points();
-//zlobi deprecated set, use reset
-    triSurf_.reset(new triSurface(bodySurfMesh_));
-//zlobi deprecated set, use reset
+    triSurf_.reset(new triSurface(bodySurfMesh_));                      //OF.com: set -> reset
     triSurfSearch_.reset(new triSurfaceSearch(triSurf_()));
 }
 //---------------------------------------------------------------------------//
@@ -98,7 +96,6 @@ vector stlBased::addModelReturnRandomPosition
     scalar ranNum = 0;
     for (int i=0;i<3;i++)
     {
-//zlobi ranNum = 2.0*maxScales[i]*randGen.scalar01() - 1.0*maxScales[i];
         ranNum = 2.0*maxScales[i]*randGen.sample01<scalar>() - 1.0*maxScales[i];
         ranVec[i] = ranNum;
     }
@@ -238,8 +235,7 @@ volumeType stlBased::getVolumeType(subVolume& sv, bool cIb)
         }
     }
 
-//zlobi mixed, inside, outside; OF od .com chce  MIXED, INSIDE, OUTSIDE
-    if (shapesIn->size() > 0)
+    if (shapesIn->size() > 0)                                           //OF.com: mixed, inside, outside -> MIXED, INSIDE, OUTSIDE
     {
         return volumeType::MIXED;
     }

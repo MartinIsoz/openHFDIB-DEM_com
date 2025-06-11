@@ -59,13 +59,10 @@ volScalarField refineF
 
 #include "createPhi.H"
 
-//zlobi  je z OF .org
-//#include "readGravitationalAcceleration.H"
-
-
-
-//nezlobi registry OK, na mesh automaticky!
-
+// Q (MI, 20250611): do we want to even keep this here? for fluid, we
+//                   should include this through fvOptions and for
+//                   solids, we might want to load this when initializing
+//                   the DEM part of the code
 uniformDimensionedVectorField g
 (
     IOobject
@@ -77,12 +74,6 @@ uniformDimensionedVectorField g
         IOobject::NO_WRITE
     )
 );
-
-
-
-
-
-
 
 IOdictionary transportProperties
 (

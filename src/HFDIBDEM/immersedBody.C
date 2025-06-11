@@ -34,9 +34,7 @@ Contributors
 #include "geometricOneField.H"
 
 
-//zlobi, kdyz nema
-//#include "/home/uzivatel/OpenFOAM/OpenFOAM-v2406/src/OpenFOAM/meshes/polyMesh/polyPatches/constraint/processor/processorPolyPatch.H"
-#include "processorPolyPatch.H"
+#include "processorPolyPatch.H"                                         //OF.com: required
 
 
 
@@ -91,7 +89,7 @@ a_(vector::zero),
 alpha_(vector::zero),
 totalAngle_(vector::zero),
 CoNum_(0.0),
-rhoF_(transportProperties_.lookup("rho")),
+rhoF_(dimensionedScalar(transportProperties_.lookup("rho"))),
 bodyId_(bodyId),
 updateTorque_(false),
 bodyOperation_(0),
@@ -479,21 +477,27 @@ void immersedBody::constructRefineField
 void immersedBody::postPimpleUpdateImmersedBody
 (
     volScalarField& body,
-    volVectorField& f
+    volVectorField& fPress,
+    volVectorField& fVisc
 )
 {
     // update Vel_, Axis_ and omega_
-    updateCoupling(body,f);
+    updateCoupling(body,fPress,fVisc);
+    
+    // move FCouplingOld_ here -> update
 
     Vel_ = VelOld_;
     Axis_ = AxisOld_;
     omega_ = omegaOld_;
+    
+    FCouplingOld_ = FCoupling_;
 }
 //---------------------------------------------------------------------------//
 void immersedBody::updateCoupling
 (
     volScalarField& body,
-    volVectorField& f
+    volVectorField& fPress,
+    volVectorField& fVisc
 )
 {
     vector FV(vector::zero);
@@ -509,7 +513,7 @@ void immersedBody::updateCoupling
         refCoMList
     );
 
-  // calcualate viscous force and torque
+    // calcualate viscous force and torque
 
     forAll (intLists, i)
     {
@@ -517,10 +521,12 @@ void immersedBody::updateCoupling
         forAll (intListI, intCell)
         {
             label cellI = intListI[intCell];
-
-            FV -=  f[cellI]*mesh_.V()[cellI];
-            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^f[cellI])
-                *mesh_.V()[cellI];
+            
+            vector fCellPress = fPress[cellI];
+            vector fCellVisc  = fVisc[cellI];
+            
+            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
         }
     }
 
@@ -530,10 +536,12 @@ void immersedBody::updateCoupling
         forAll (surfListI, surfCell)
         {
             label cellI = surfListI[surfCell];
+            
+            vector fCellPress = body[cellI]*fPress[cellI];
+            vector fCellVisc  = body[cellI]*fVisc[cellI];
 
-            FV -=  f[cellI]*mesh_.V()[cellI];
-            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^f[cellI])
-                *mesh_.V()[cellI];
+            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
         }
     }
 
@@ -542,7 +550,11 @@ void immersedBody::updateCoupling
   FV *= rhoF_.value();
   TA *= rhoF_.value();
 
-  FCoupling_ = forces(FV, TA);
+  FCoupling_ = couplingHistCoef_*forces(FV, TA) + (1.0-couplingHistCoef_)*FCouplingOld_;
+  
+  couplingHistCoef_ = max(couplingHistCoef_*0.95, 0.8);
+  
+  Info << "======= COUPLING COEF IS: " << couplingHistCoef_ << endl;
 }
 //---------------------------------------------------------------------------//
 // update movement variables of the body
@@ -597,8 +609,11 @@ void immersedBody::updateMovementComp
         {
             // compute current acceleration (assume constant over timeStep)
 
-            InfoH << iB_Info <<"-- body "<< bodyId_ <<" ParticelMass  : " << geomModel_->getM0() << endl;
-            InfoH << iB_Info <<"-- body "<< bodyId_ <<" Acting Force  : " << F << endl;
+            InfoH << iB_Info <<"-- body "<< bodyId_ <<" ParticelMass    : " << geomModel_->getM0() << endl;
+            InfoH << iB_Info <<"-- body "<< bodyId_ <<" Acting Force    : " << F << endl;
+            InfoH << iB_Info <<"-- body "<< bodyId_ <<" Coupling Force  : " << FCoupling_.F << endl;
+            InfoH << iB_Info <<"-- body "<< bodyId_ <<" G-B Force       : " << FG << endl;
+            
             a_  = F/(geomModel_->getM0());
             // update body linear velocity
             Vel_ = Vel + deltaT*a_;
@@ -777,9 +792,6 @@ void immersedBody::updateVectorField
 )
 {
     // check dictionary for parameters (only noSlip allowed)
-
-//zlobi
-//  word BC = immersedDict_.subDict(VName).lookup("BC");
     word BC = word(immersedDict_.subDict(VName).lookup("BC"));
 
     List<DynamicLabelList> intLists;
@@ -1068,10 +1080,11 @@ void immersedBody::initSyncWithFlow(const volVectorField& U)
 void immersedBody::pimpleUpdate
 (
     volScalarField& body,
-    volVectorField& f
+    volVectorField& fPress,
+    volVectorField& fVisc
 )
 {
-    updateCoupling(body, f);
+    updateCoupling(body, fPress, fVisc);
     updateMovement(VelOld_, AxisOld_, omegaOld_);
 }
 //---------------------------------------------------------------------------//

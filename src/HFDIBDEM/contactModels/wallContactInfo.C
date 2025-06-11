@@ -526,7 +526,8 @@ void wallContactInfo::checkSMElement
         while(iC < contactPatches.size() and !SM_()[index].isMesh)
         {
 
-            isMeshLocC *= isInsidePlane(centroidPoint,contactPatches[iC]);
+            //~ isMeshLocC *= isInsidePlane(centroidPoint,contactPatches[iC]);//OF.com issues warning
+            isMeshLocC &= isInsidePlane(centroidPoint,contactPatches[iC]);
             iC++;
         }
 
@@ -544,7 +545,8 @@ void wallContactInfo::checkSMElement
                 bool isMeshLocV(true);
                 while(iC < contactPatches.size() and !SM_()(verticesLabels[vL]).isMesh)
                 {
-                    isMeshLocV *= isInsidePlane(vertexPoint,contactPatches[iC]);
+                    //~ isMeshLocV *= isInsidePlane(vertexPoint,contactPatches[iC]);
+                    isMeshLocV &= isInsidePlane(vertexPoint,contactPatches[iC]);
                     iC ++;
                 }
                 SM_()(verticesLabels[vL]).isMesh = isMeshLocV;
@@ -568,9 +570,11 @@ void wallContactInfo::checkElement
     bool allInBodyLocal(true);
 
     inMeshLocal =  inMeshLocal || SM_()[index].isMesh;
-    allInMeshLocal *= SM_()[index].isMesh;
+    //~ allInMeshLocal *= SM_()[index].isMesh;
+    allInMeshLocal &= SM_()[index].isMesh;
     inBodyLocal =  inBodyLocal || SM_()[index].isCBody;
-    allInBodyLocal *= SM_()[index].isCBody;
+    //~ allInBodyLocal *= SM_()[index].isCBody;
+    allInBodyLocal &= SM_()[index].isCBody;
     if(SM_()[index].isCBody && !SM_()[index].initPointSet)
     {
         SM_()[index].initPoint = SM_()[index].center;
@@ -581,9 +585,11 @@ void wallContactInfo::checkElement
     forAll(verticesLabels, vL)
     {
         inMeshLocal =  inMeshLocal || SM_()(verticesLabels[vL]).isMesh;
-        allInMeshLocal *= SM_()(verticesLabels[vL]).isMesh;
+        //~ allInMeshLocal *= SM_()(verticesLabels[vL]).isMesh;
+        allInMeshLocal &= SM_()(verticesLabels[vL]).isMesh;
         inBodyLocal =  inBodyLocal || SM_()(verticesLabels[vL]).isCBody;
-        allInBodyLocal *= SM_()(verticesLabels[vL]).isCBody;
+        //~ allInBodyLocal *= SM_()(verticesLabels[vL]).isCBody;
+        allInBodyLocal &= SM_()(verticesLabels[vL]).isCBody;
         if(SM_()(verticesLabels[vL]).isCBody && !SM_()[index].isCBody && !SM_()[index].initPointSet)
         {
             SM_()[index].initPoint = SM_()(verticesLabels[vL]).center;

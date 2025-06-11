@@ -37,4 +37,4 @@ ibInterpolation/leastSquaresInt/leastSquaresIntInfo.C
 ibInterpolation/leastSquaresInt/leastSquaresInt.C
 immersedBody.C
 openHFDIBDEM.C
-LIB = $(FOAM_USER_LIBBIN)/libHFDIBDEM_new
+LIB = $(FOAM_USER_LIBBIN)/libHFDIBDEM

@@ -17,7 +17,6 @@
         if (HFDIBDEMDict_.subDict(bodyName).found("bodyGeom"))
         {
 
-//zlobi bez word
             word input = word(HFDIBDEMDict_.subDict(bodyName).lookup("bodyGeom"));
             bodyGeom = input;
             InfoH << iB_Info << "Found bodyGeom for " << bodyName
@@ -45,7 +44,6 @@
         else if(bodyGeom == "sphere")
         {
 
-//zlobi bez vector
             vector startPosition = vector(HFDIBDEMDict_.subDict(bodyName).subDict("sphere").lookup("startPosition"));
             scalar radius = readScalar(HFDIBDEMDict_.subDict(bodyName).subDict("sphere").lookup("radius"));
 

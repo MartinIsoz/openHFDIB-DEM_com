@@ -157,7 +157,6 @@ void addModelRepeatRandomPosition::init()
 	}
 	else if (addDomain_ == "boundBox")
 	{
-//zlobi bez vector
 		minBound_       = vector(addDomainCoeffs_.lookup("minBound"));
 		maxBound_       = vector(addDomainCoeffs_.lookup("maxBound"));
 		boundBoxActive_ = true;
@@ -247,7 +246,6 @@ void addModelRepeatRandomPosition::init()
 	}
 	else if (rotationMode_ == "fixedAxisRandomRotation")
 	{
-//zlobi bez vector
 		axisOfRot_       = vector(rotationModeCoeffs_.lookup("axis"));
         InfoH << addModel_Info << "-- addModelMessage-- "
             << "source STL will be rotated by a random angle around a fixed axis upon addition" << endl;
@@ -336,7 +334,6 @@ std::shared_ptr<geomModel> addModelRepeatRandomPosition::addBody
             << " PiRad around axis " << axisOfRot_ << endl;
 
         geomModel_->bodyRotatePoints(rotAngle,axisOfRot_);
-        //~ CoM = gSum(bodySurfMesh.coordinates())/bodySurfMesh.size();
     }
 
     // scale
@@ -582,8 +579,6 @@ scalar addModelRepeatRandomPosition::checkLambdaFraction(const volScalarField& b
 //---------------------------------------------------------------------------//
 scalar addModelRepeatRandomPosition::returnRandomAngle()
 {
-//zlobi scalar01
-//  scalar ranNum = 2.0*randGen_.scalar01() - 1.0;
     scalar ranNum = 2.0*randGen_.sample01<scalar>() - 1.0;
     scalar angle  = ranNum*Foam::constant::mathematical::pi;
     return angle;
@@ -591,8 +586,6 @@ scalar addModelRepeatRandomPosition::returnRandomAngle()
 //---------------------------------------------------------------------------//
 scalar addModelRepeatRandomPosition::returnRandomScale()
 {
-//zlobi scalar01
-//  scalar ranNum       = randGen_.scalar01();
     scalar ranNum       = randGen_.sample01<scalar>();
     scalar scaleDiff    = maxScale_ - minScale_;
     scalar scaleFactor  = minScale_ + ranNum*scaleDiff;
@@ -608,8 +601,6 @@ vector addModelRepeatRandomPosition::returnRandomRotationAxis()
 
     for (int i=0;i<3;i++)
     {
-//zlobi scalar01
-//      ranNum = randGen_.scalar01();
         ranNum = randGen_.sample01<scalar>();
         axisOfRotation[i] = ranNum;
     }

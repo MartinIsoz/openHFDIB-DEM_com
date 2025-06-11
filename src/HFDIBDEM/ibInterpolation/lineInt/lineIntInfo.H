@@ -41,7 +41,6 @@ Contributors
 #include "interpolationInfo.H"
 #include "intPoint.H"
 
-//zlobi, kdyz neni
 #include "processorPolyPatch.H"
 
 
@@ -58,8 +57,8 @@ namespace Foam
 
         private:
 
-        autoPtr<List<List<intPoint>>> intPointsPtr_; // Points used for interp.
-        autoPtr<List<List<vector>>> intVelocPtr_; // Velocity at int points
+        autoPtr<List<List<intPoint>>> intPointsPtr_;                    // Points used for interp.
+        autoPtr<List<List<vector>>> intVelocPtr_;                       // Velocity at int points
 
         intPoint  findIntPoint
         (

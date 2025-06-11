@@ -63,7 +63,7 @@ class addModelOnceFromFile
 
     fileName                fileName_;
 
-//zlobi
+    //there might be a problem in OF2406 and similar
     IFstream                ifStream_;
 
 

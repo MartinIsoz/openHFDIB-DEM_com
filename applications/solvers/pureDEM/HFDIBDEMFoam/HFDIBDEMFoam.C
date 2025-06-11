@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
         createBodiesTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
 
         // clockTime preUpdateBodiesTime; // OS time efficiency testing
-        HFDIBDEM.preUpdateBodies(lambda,f);
+        HFDIBDEM.preUpdateBodies(lambda);
         // preUpdateTime_ += preUpdateBodiesTime.timeIncrement(); // OS time efficiency testing
 
         // clockTime meshUpdateTime; // OS time efficiency testing
@@ -111,7 +111,6 @@ int main(int argc, char *argv[])
         // clockTime meshChangingTime; // OS time efficiency testing
         if (mesh.changing())
         {
-//zlobi bez tecky za nulou
             lambda *= 0.;
             HFDIBDEM.recreateBodies(lambda,refineF);
         }
@@ -120,7 +119,7 @@ int main(int argc, char *argv[])
         Info << "updating HFDIBDEM" << endl;
 
         // clockTime postUpdateBodiesTime;
-        HFDIBDEM.postUpdateBodies(lambda,f);
+        HFDIBDEM.postUpdateBodies(lambda,f,f);                          //MI: here, we should clean up interfaces
         // postUpdateTime_ += postUpdateBodiesTime.timeIncrement();
 
         // clockTime addRemoveTime;
