@@ -523,6 +523,7 @@ void immersedBody::updateCoupling
             label cellI = intListI[intCell];
             
             vector fCellPress = fPress[cellI];
+            //~ vector fCellPress = 0.0*fPress[cellI];
             vector fCellVisc  = fVisc[cellI];
             
             FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
@@ -537,7 +538,8 @@ void immersedBody::updateCoupling
         {
             label cellI = surfListI[surfCell];
             
-            vector fCellPress = body[cellI]*fPress[cellI];
+            //~ vector fCellPress = body[cellI]*fPress[cellI];
+            vector fCellPress = fPress[cellI];
             vector fCellVisc  = body[cellI]*fVisc[cellI];
 
             FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
@@ -552,7 +554,7 @@ void immersedBody::updateCoupling
 
   FCoupling_ = couplingHistCoef_*forces(FV, TA) + (1.0-couplingHistCoef_)*FCouplingOld_;
   
-  couplingHistCoef_ = max(couplingHistCoef_*0.95, 0.8);
+  couplingHistCoef_ = max(couplingHistCoef_*0.95, 0.5);
   
   Info << "======= COUPLING COEF IS: " << couplingHistCoef_ << endl;
 }

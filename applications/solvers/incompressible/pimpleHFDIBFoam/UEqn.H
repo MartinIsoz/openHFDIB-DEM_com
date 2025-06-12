@@ -22,6 +22,7 @@ fvOptions.constrain(UEqn);
 volScalarField UA(UEqn.A());
 HFDIBDEM.interpolateIB(U,Ui,lambda);
 Ui.correctBoundaryConditions();
+
 f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
 f.correctBoundaryConditions();  
 
@@ -40,6 +41,10 @@ for (int i = 0; i < fDirectForcingIter; i++)
     
     HFDIBDEM.interpolateIB(U,Ui,lambda);
     Ui.correctBoundaryConditions();
-    f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+    //~ f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+    f += 0.8*surface*(Ui - U)/runTime.deltaT();                         //MI: in this loop, correct the force incrementaly
     f.correctBoundaryConditions(); 
 }
+
+UEqn -= lambda*f;
+//~ UEqn -= f;

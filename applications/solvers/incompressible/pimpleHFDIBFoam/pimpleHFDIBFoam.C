@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
                     HFDIBDEM.recreateBodies(lambda,refineF);
                 }
 
-                f *= lambda;
+                //~ f *= lambda;
             }
 
             #include "UEqn.H"
@@ -176,15 +176,16 @@ int main(int argc, char *argv[])
         clockTime postUpdateBodiesTime;
         
         // --- compute viscous forces and update coupling
-        fDragPress = fvc::grad(p);
+        //~ fDragPress = fvc::grad(p);
+        fDragPress = -fvc::grad(lambda)*p;
         fDragVisc  = -fvc::div(turbulence->devReff());
-        for (label pass=0; pass<=fDragSmoothingIter; pass++)
-        {
-            fDragPress = fvc::average(fvc::interpolate(fDragPress));
-            fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
-            fDragPress.correctBoundaryConditions();
-            fDragVisc.correctBoundaryConditions();
-        }
+        //~ for (label pass=0; pass<=fDragSmoothingIter; pass++)
+        //~ {
+            //~ fDragPress = fvc::average(fvc::interpolate(fDragPress));
+            //~ fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
+            //~ fDragPress.correctBoundaryConditions();
+            //~ fDragVisc.correctBoundaryConditions();
+        //~ }
         HFDIBDEM.postUpdateBodies(lambda,fDragPress,fDragVisc);
         suplTime_ += postUpdateBodiesTime.timeIncrement();
 
