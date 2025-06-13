@@ -197,4 +197,15 @@ if(HFDIBDEMDict.found("nDirectForcingIterations"))
 {
     fDirectForcingIter = label(readLabel(HFDIBDEMDict.lookup("nDirectForcingIterations")));
 }
+scalar tolUEqn(SMALL);                                                  //surface threshold for identification 
+if(HFDIBDEMDict.found("immersedUTolerance"))
+{
+    tolUEqn = scalar(readScalar(HFDIBDEMDict.lookup("immersedUTolerance")));
+    Info << "found tolerance for immersed U: " << tolUEqn << endl;
+    Info << "UEqn will loop until the tolerance is met or for: " << fDirectForcingIter << " iterations" << endl;
+}
+else
+{
+    Info << "no residual control for immmersed U tolerance set, UEqn will loop for: " << fDirectForcingIter << "iterations" << endl;
+}
 

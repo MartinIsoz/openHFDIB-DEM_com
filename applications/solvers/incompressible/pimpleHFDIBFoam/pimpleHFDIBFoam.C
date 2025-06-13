@@ -176,9 +176,13 @@ int main(int argc, char *argv[])
         clockTime postUpdateBodiesTime;
         
         // --- compute viscous forces and update coupling
+        volVectorField gradLambda(fvc::grad(lambda));
+        
         //~ fDragPress = fvc::grad(p);
-        fDragPress = -fvc::grad(lambda)*p;
-        fDragVisc  = -fvc::div(turbulence->devReff());
+        //~ fDragPress = -fvc::grad(lambda)*p;
+        fDragPress = -gradLambda*p;
+        //~ fDragVisc  = -fvc::div(turbulence->devReff());
+        fDragVisc  = gradLambda & turbulence->devReff();
         //~ for (label pass=0; pass<=fDragSmoothingIter; pass++)
         //~ {
             //~ fDragPress = fvc::average(fvc::interpolate(fDragPress));

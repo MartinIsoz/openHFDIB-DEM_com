@@ -515,21 +515,21 @@ void immersedBody::updateCoupling
 
     // calcualate viscous force and torque
 
-    forAll (intLists, i)
-    {
-        DynamicLabelList& intListI = intLists[i];
-        forAll (intListI, intCell)
-        {
-            label cellI = intListI[intCell];
+    //~ forAll (intLists, i)
+    //~ {
+        //~ DynamicLabelList& intListI = intLists[i];
+        //~ forAll (intListI, intCell)
+        //~ {
+            //~ label cellI = intListI[intCell];
             
-            vector fCellPress = fPress[cellI];
+            //~ // vector fCellPress = fPress[cellI];
             //~ vector fCellPress = 0.0*fPress[cellI];
-            vector fCellVisc  = fVisc[cellI];
+            //~ vector fCellVisc  = fVisc[cellI];
             
-            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
-            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
-        }
-    }
+            //~ FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            //~ TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+        //~ }
+    //~ }
 
     forAll (surfLists, i)
     {
