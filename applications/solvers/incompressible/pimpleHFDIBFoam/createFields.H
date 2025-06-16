@@ -129,6 +129,20 @@ volScalarField surface
     dimensionedScalar("zero",dimless,0)
 );
 
+// volScalarField haloCells
+// (
+//     IOobject
+//     (
+//         "haloCells",
+//         runTime.timeName(),
+//         mesh,
+//         IOobject::READ_IF_PRESENT,
+//         IOobject::AUTO_WRITE
+//     ),
+//     mesh,
+//     dimensionedScalar("zero",dimless,0)
+// );
+
 #include "createPhi.H"
 
 

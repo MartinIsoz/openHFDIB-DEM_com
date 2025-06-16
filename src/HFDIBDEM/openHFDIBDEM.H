@@ -213,6 +213,8 @@ namespace Foam
 
     void setSolverInfo();
 
+    void writeHaloCells(volScalarField& halo);
+    
  };
 }
 

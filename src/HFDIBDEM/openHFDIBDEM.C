@@ -509,14 +509,16 @@ void openHFDIBDEM::createBodies(volScalarField& body,volScalarField& refineF)
 
             immersedBodies_[bodyId].syncImmersedBodyParralell2(body,refineF);
             immersedBodies_[bodyId].checkIfInDomain(body);
-            immersedBodies_[bodyId].updateOldMovementVars();
+            immersedBodies_[bodyId].updateOldMovementVars();            
         }
     }
-
+    // volScalarField bodyCopy(body);
+    volVectorField gradBody(fvc::grad(body));
     forAll (immersedBodies_,bodyId)
     {
         if (immersedBodies_[bodyId].getIsActive())
         {
+            immersedBodies_[bodyId].updateHaloCells(body,gradBody);
             immersedBodies_[bodyId].chceckBodyOp();
         }
     }
@@ -1391,5 +1393,23 @@ void openHFDIBDEM::writeFirtsTimeBodiesInfo()
 void openHFDIBDEM::setSolverInfo()
 {
     solverInfo::setOnlyDEM(true);
+}
+//---------------------------------------------------------------------------//
+void openHFDIBDEM::writeHaloCells(volScalarField& halo)
+{
+    halo *= 0.0;
+    Info << "Writing halo cells for immersed bodies" << endl;
+    forAll (immersedBodies_,bodyId)
+    {
+        if (immersedBodies_[bodyId].getIsActive())
+        {
+            const List<DynamicLabelList>& ibHalloCells(immersedBodies_[bodyId].getHaloCells());
+            forAll(ibHalloCells[Pstream::myProcNo()],ibCellI)
+            {
+                label cellI = ibHalloCells[Pstream::myProcNo()][ibCellI];
+                halo[cellI] = 1.0;                
+            }
+        }
+    }
 }
 //---------------------------------------------------------------------------//

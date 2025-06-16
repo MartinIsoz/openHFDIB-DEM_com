@@ -103,7 +103,8 @@ charCellSize_(1e3),
 refineBuffers_(0),
 recomputeM0_(recomputeM0),
 timesToSetStatic_(-1),
-staticContactPost_(vector::zero)
+staticContactPost_(vector::zero),
+haloCells_(Pstream::nProcs())
 {
     #include "initializeIB.H"
 
@@ -1174,3 +1175,48 @@ void immersedBody::chceckBodyOp()
 
     ibContactClass_->inContactWithStatic(false);
 }
+//---------------------------------------------------------------------------//
+void immersedBody::updateHaloCells(
+    volScalarField& body,
+    volVectorField& gradBody
+)
+{
+    // clear halo cells
+    haloCells_[Pstream::myProcNo()].clear(); 
+    // update halo cells
+
+    autoPtr<DynamicLabelList> nextToCheck(
+    new DynamicLabelList);
+    autoPtr<DynamicLabelList> auxToCheck(
+        new DynamicLabelList);
+
+    nextToCheck().append(geomModel_->getSurfaceCellList()[Pstream::myProcNo()]);
+
+    labelHashSet checkedCells;
+
+    label iterCount(0);
+    label iterMax(mesh_.nCells());
+    while(nextToCheck().size() > 0 && iterCount < iterMax)
+    {
+        auxToCheck().clear();
+        forAll(nextToCheck(), cellI)
+        {
+            label cellId = nextToCheck()[cellI];
+            if(!checkedCells.found(cellId))
+            {
+                checkedCells.insert(cellId);
+                vector pCvec(mesh_.C()[cellId] - geomModel_->getCoM());
+                if(((-gradBody[cellId] & pCvec) > SMALL))
+                {
+                    haloCells_[Pstream::myProcNo()].append(cellId);
+                    auxToCheck().append(mesh_.cellCells()[cellId]);
+                }
+            }
+        }
+        autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck =std::move(helpPtr);
+        iterCount++;
+    }
+}
+

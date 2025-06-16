@@ -144,6 +144,7 @@ namespace Foam
         // operation to perform
         int     bodyOperation_;
 
+
         // update immersed body info
         void  updateImmersedBody
         (
@@ -176,6 +177,8 @@ namespace Foam
         label   recomputeM0_;                                           //how many times rocompute M0_ because of refinement
         label   timesToSetStatic_;
         vector  staticContactPost_;
+        // haloCells lambdaField
+        List<DynamicLabelList> haloCells_;        
         protected:
 
 
@@ -512,6 +515,17 @@ namespace Foam
         {
             couplingHistCoef_ = 1.0;
         }
+
+        void updateHaloCells(
+            volScalarField& body,
+            volVectorField& gradBody
+        );
+
+        const List<DynamicLabelList>& getHaloCells() const
+        {
+            return haloCells_;
+        }
+        
     };
 }
 #endif

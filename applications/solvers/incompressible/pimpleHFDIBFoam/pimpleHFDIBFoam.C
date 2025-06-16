@@ -76,7 +76,9 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    Info << "Starting pimpleHFDIBFoam library version 2.6 with OF2406" << endl;
     Info << "\nInitializing HFDIBDEM\n" << endl;
+    
     openHFDIBDEM  HFDIBDEM(mesh);
     HFDIBDEM.initialize(lambda,U,refineF,maxRefinementLevel,runTime.timeName());
     #include "initialMeshRefinement.H"
@@ -115,6 +117,9 @@ int main(int argc, char *argv[])
         clockTime createBodiesTime; // OS time efficiency testing
         HFDIBDEM.createBodies(lambda,refineF);
         suplTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
+
+        // Info << "calling HFDIBDEM.writeHaloCells(haloCells);" << endl;
+        // HFDIBDEM.writeHaloCells(haloCells);
 
         clockTime preUpdateBodiesTime; // OS time efficiency testing
         HFDIBDEM.preUpdateBodies(lambda);
