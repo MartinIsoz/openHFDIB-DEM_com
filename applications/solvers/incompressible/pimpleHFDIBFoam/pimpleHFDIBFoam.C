@@ -76,9 +76,7 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    Info << "Starting pimpleHFDIBFoam library version 2.6 with OF2406" << endl;
     Info << "\nInitializing HFDIBDEM\n" << endl;
-    
     openHFDIBDEM  HFDIBDEM(mesh);
     HFDIBDEM.initialize(lambda,U,refineF,maxRefinementLevel,runTime.timeName());
     #include "initialMeshRefinement.H"
@@ -117,9 +115,6 @@ int main(int argc, char *argv[])
         clockTime createBodiesTime; // OS time efficiency testing
         HFDIBDEM.createBodies(lambda,refineF);
         suplTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
-
-        // Info << "calling HFDIBDEM.writeHaloCells(haloCells);" << endl;
-        // HFDIBDEM.writeHaloCells(haloCells);
 
         clockTime preUpdateBodiesTime; // OS time efficiency testing
         HFDIBDEM.preUpdateBodies(lambda);
@@ -185,17 +180,20 @@ int main(int argc, char *argv[])
         
         //~ fDragPress = fvc::grad(p);
         //~ fDragPress = -fvc::grad(lambda)*p;
-        fDragPress = -gradLambda*p;
+        //~ fDragPress = -0.0*gradLambda*p;
+        fDragPress = -fvc::ddt(U);
         //~ fDragVisc  = -fvc::div(turbulence->devReff());
-        fDragVisc  = gradLambda & turbulence->devReff();
-        //~ for (label pass=0; pass<=fDragSmoothingIter; pass++)
-        //~ {
-            //~ fDragPress = fvc::average(fvc::interpolate(fDragPress));
-            //~ fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
-            //~ fDragPress.correctBoundaryConditions();
-            //~ fDragVisc.correctBoundaryConditions();
-        //~ }
-        HFDIBDEM.postUpdateBodies(lambda,fDragPress,fDragVisc);
+        //~ fDragVisc  = -gradLambda & turbulence->devReff();
+        fDragVisc  = f;
+        for (label pass=0; pass<=fDragSmoothingIter; pass++)
+        {
+            fDragPress = fvc::average(fvc::interpolate(fDragPress));
+            fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
+            fDragPress.correctBoundaryConditions();
+            fDragVisc.correctBoundaryConditions();
+        }
+        
+        HFDIBDEM.postUpdateBodies(lambda,gradLambda,fDragPress,fDragVisc);
         suplTime_ += postUpdateBodiesTime.timeIncrement();
 
 
@@ -222,9 +220,9 @@ int main(int argc, char *argv[])
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << nl << endl;
 
-    Info<< " CFDTime_                 = " << CFDTime_             << " s \n" <<
-           " Solver suplementary time = " << suplTime_            << " s \n" << 
-           " DEMTime_                 = " << DEMTime_             << " s \n" << endl;
+        Info<< " CFDTime_                 = " << CFDTime_             << " s \n" <<
+               " Solver suplementary time = " << suplTime_            << " s \n" << 
+               " DEMTime_                 = " << DEMTime_             << " s \n" << endl;
     }
 
     Info<< "End\n" << endl;

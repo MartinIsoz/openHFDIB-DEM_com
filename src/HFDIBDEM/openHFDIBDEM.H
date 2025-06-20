@@ -159,6 +159,7 @@ namespace Foam
     void postUpdateBodies
     (
         volScalarField& body,
+        volVectorField& gradBody,
         volVectorField& fPress,
         volVectorField& fVisc
     );
@@ -213,8 +214,6 @@ namespace Foam
 
     void setSolverInfo();
 
-    void writeHaloCells(volScalarField& halo);
-    
  };
 }
 

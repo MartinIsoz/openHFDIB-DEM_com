@@ -144,7 +144,6 @@ namespace Foam
         // operation to perform
         int     bodyOperation_;
 
-
         // update immersed body info
         void  updateImmersedBody
         (
@@ -153,6 +152,8 @@ namespace Foam
         );
 
         // update fluid-solid coupling
+        List<DynamicLabelList> haloCells_; 
+        
         void updateCoupling
         (
             volScalarField& body,
@@ -177,8 +178,6 @@ namespace Foam
         label   recomputeM0_;                                           //how many times rocompute M0_ because of refinement
         label   timesToSetStatic_;
         vector  staticContactPost_;
-        // haloCells lambdaField
-        List<DynamicLabelList> haloCells_;        
         protected:
 
 
@@ -265,6 +264,16 @@ namespace Foam
             DynamicLabelList cellsToIterate,
             DynamicLabelList startLevel
         );
+        
+        void updateHaloCells
+        (
+            volVectorField& gradBody
+        );
+        
+        void resetCouplingHistory()
+        {
+            couplingHistCoef_ = 1.0;
+        }
 
         // getters
 
@@ -443,7 +452,7 @@ namespace Foam
             ibContactClass_->inContactWithStatic(inContact);
         }
 
-        void chceckBodyOp();
+        void checkBodyOp();
 
         void setRestartSim
         (
@@ -511,21 +520,10 @@ namespace Foam
 
         vectorField getUatIbPoints();
         
-        void resetCouplingHistory()
-        {
-            couplingHistCoef_ = 1.0;
-        }
-
-        void updateHaloCells(
-            volScalarField& body,
-            volVectorField& gradBody
-        );
-
         const List<DynamicLabelList>& getHaloCells() const
         {
             return haloCells_;
         }
-        
     };
 }
 #endif
