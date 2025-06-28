@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
+   \\    /   O peration     |
+    \\  /    A nd           | www.openfoam.com
      \\/     M anipulation  |
+-------------------------------------------------------------------------------
+    Copyright (C) 2011-2017 OpenFOAM Foundation
+    Copyright (C) 2020 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -22,30 +25,35 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    pimpleHFDIBFoam
+    interFoam
+
+Group
+    grpMultiphaseSolvers
 
 Description
-    Transient solver for incompressible, turbulent flow of Newtonian fluids,
-    with optional mesh motion and mesh topology changes.
-
-    Turbulence modelling is generic, i.e. laminar, RAS or LES may be selected.
+    Solver for two incompressible, isothermal immiscible fluids using a VOF
+    (volume of fluid) phase-fraction based interface capturing approach,
+    with optional mesh motion and mesh topology changes including adaptive
+    re-meshing.
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
-
-#include "singlePhaseTransportModel.H"
-#include "turbulentTransportModel.H"
-#include "simpleControl.H"
-#include "fvOptions.H"
-
-#include "pimpleControl.H"
-#include "CorrectPhi.H"
-#include "fvOptions.H"
+#include "CMULES.H"
+#include "EulerDdtScheme.H"
 #include "localEulerDdtScheme.H"
+#include "CrankNicolsonDdtScheme.H"
+#include "subCycle.H"
+#include "immiscibleIncompressibleTwoPhaseMixture.H"
+#include "incompressibleInterPhaseTransportModel.H"
+#include "turbulentTransportModel.H"
+#include "pimpleControl.H"
+#include "fvOptions.H"
+#include "CorrectPhi.H"
 #include "fvcSmooth.H"
 
+// hfdib-dem inclusions
 #include "triSurfaceMesh.H"
 #include "openHFDIBDEM.H"
 #include "clockTime.H"
@@ -54,44 +62,45 @@ Description
 
 int main(int argc, char *argv[])
 {
+    argList::addNote
+    (
+        "Solver for two incompressible, isothermal immiscible fluids"
+        " using VOF phase-fraction based interface capturing.\n"
+        "With optional mesh motion and mesh topology changes including"
+        " adaptive re-meshing."
+    );
+
     #include "postProcess.H"
 
+    #include "addCheckCaseOptions.H"
     #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
     #include "initContinuityErrs.H"
     #include "createDyMControls.H"
     #include "createFields.H"
+    #include "createAlphaFluxes.H"
+    #include "initCorrectPhi.H"
     #include "createUfIfPresent.H"
-
-    turbulence->validate();
+    
 
     if (!LTS)
     {
         #include "CourantNo.H"
         #include "setInitialDeltaT.H"
     }
-
+    
+    // hfdib-dem inclusions
     #include "readDynMeshDict.H"
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
+    
+    // hfdib-dem code modification
     Info << "\nInitializing HFDIBDEM\n" << endl;
     openHFDIBDEM  HFDIBDEM(mesh);
     HFDIBDEM.initialize(lambda,U,refineF,maxRefinementLevel,runTime.timeName());
     #include "initialMeshRefinement.H"
 
-    if(HFDIBDEM.getRecordFirstTime())
-    {
-        HFDIBDEM.setRecordFirstTime(false);
-        HFDIBDEM.writeBodiesInfo();
-    }
-
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     Info<< "\nStarting time loop\n" << endl;
-
-    scalar CFDTime_(0.0);
-    scalar DEMTime_(0.0);
-    scalar suplTime_(0.0);
 
     while (runTime.run())
     {
@@ -104,23 +113,19 @@ int main(int argc, char *argv[])
         else
         {
             #include "CourantNo.H"
+            #include "alphaCourantNo.H"
             #include "setDeltaT.H"
         }
 
-        runTime++;
+        ++runTime;
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
-
-        clockTime createBodiesTime; // OS time efficiency testing
+        
+        // hfdib-dem code modification
         HFDIBDEM.createBodies(lambda,refineF);
-        HFDIBDEM.updateBodiesRhoF(rho.value());
-        suplTime_ += createBodiesTime.timeIncrement(); // OS time efficiency testing
-
-        clockTime preUpdateBodiesTime; // OS time efficiency testing
+        HFDIBDEM.updateBodiesRhoF(rho);
         HFDIBDEM.preUpdateBodies(lambda);
-        suplTime_ += preUpdateBodiesTime.timeIncrement(); // OS time efficiency testing
 
-        clockTime pimpleRunClockTime; // OS time efficiency testing
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
         {
@@ -130,6 +135,16 @@ int main(int argc, char *argv[])
 
                 if (mesh.changing())
                 {
+                    // Do not apply previous time-step mesh compression flux
+                    // if the mesh topology changed
+                    if (mesh.topoChanging())
+                    {
+                        talphaPhi1Corr0.clear();
+                    }
+
+                    gh = (g & mesh.C()) - ghRef;
+                    ghf = (g & mesh.Cf()) - ghRef;
+
                     MRF.update();
 
                     if (correctPhi)
@@ -142,20 +157,21 @@ int main(int argc, char *argv[])
 
                         // Make the flux relative to the mesh motion
                         fvc::makeRelative(phi, U);
+
+                        mixture.correct();
                     }
 
                     if (checkMeshCourantNo)
                     {
                         #include "meshCourantNo.H"
                     }
-
-                    lambda *= 0.0;
-
-                    HFDIBDEM.recreateBodies(lambda,refineF);
                 }
-
-                //~ f *= lambda;
             }
+            
+            #include "alphaControls.H"
+            #include "alphaEqnSubCycle.H"
+
+            mixture.correct();
 
             #include "UEqn.H"
 
@@ -167,19 +183,16 @@ int main(int argc, char *argv[])
 
             if (pimple.turbCorr())
             {
-                laminarTransport.correct();
                 turbulence->correct();
             }
         }
-        CFDTime_ += pimpleRunClockTime.timeIncrement();
-        Info << "updating HFDIBDEM" << endl;
-        clockTime postUpdateBodiesTime;
         
+        // hfdib-dem code modification
         // --- compute viscous forces and update coupling
         volVectorField gradLambda(fvc::grad(lambda));
         //~ scalar omega1(0.5);                                             //formulation weight
         //~ scalar omega1(0.5);                                             //formulation weight
-        scalar omega1(0.0);                                             //formulation weight
+        //~ scalar omega1(0.0);                                             //formulation weight
         //~ scalar omega1(1.0);                                             //formulation weight
         
         //~ fDragPress = fvc::grad(p);
@@ -189,12 +202,24 @@ int main(int argc, char *argv[])
         //~ fDragVisc  = -fvc::div(turbulence->devReff());
         //~ fDragVisc  = -gradLambda & turbulence->devReff();
         //~ fDragVisc  = f;
-        fDragPress = -0.5*omega1*(fvc::ddt(U) - f);
-        fDragVisc  = fDragPress;
-        fDragPress+= (1.0-omega1)*fvc::grad(p);
-        fDragVisc += (1.0-omega1)*fvc::div(turbulence->devReff());      //this sign might actually be correct
+        //~ fDragPress = -0.5*omega1*(fvc::ddt(U) - f);
+        //~ fDragVisc  = fDragPress;
+        //~ fDragPress+= (1.0-omega1)*fvc::grad(p);
+        //~ fDragVisc += (1.0-omega1)*fvc::div(turbulence->devRhoReff());      //this sign might actually be correct
         //~ fDragPress*= 0.0;
-        fDragVisc *= 0.0;
+        //~ fDragVisc *= 0.0;
+        
+        //~ fDragPress = 0.5*f/rho;
+        //~ fDragVisc  = fDragPress;
+        
+        fDragPress = -gradLambda*p/rho;
+        
+        volTensorField gradU = fvc::grad(U);
+        volTensorField tau = -mixture.nu()*(gradU + gradU.T());
+        fDragVisc = -gradLambda & tau;
+        
+        //~ fDragPress /= rho;
+        //~ fDragVisc  /= rho;
         for (label pass=0; pass<=fDragSmoothingIter; pass++)
         {
             fDragPress = fvc::average(fvc::interpolate(fDragPress));
@@ -204,36 +229,19 @@ int main(int argc, char *argv[])
         }
         
         HFDIBDEM.postUpdateBodies(lambda,gradLambda,fDragPress,fDragVisc);
-        suplTime_ += postUpdateBodiesTime.timeIncrement();
-
-
-        clockTime addRemoveTime;
         HFDIBDEM.addRemoveBodies(lambda,U,refineF);
-        HFDIBDEM.updateBodiesRhoF(rho.value());
-        suplTime_ += addRemoveTime.timeIncrement();
-
-        clockTime updateDEMTime;
+        HFDIBDEM.updateBodiesRhoF(rho);
         HFDIBDEM.updateDEM(lambda,refineF);
-        DEMTime_ += updateDEMTime.timeIncrement();
         Info << "updated HFDIBDEM" << endl;
 
-
         runTime.write();
-
-        clockTime writeBodiesInfoTime;
+        
         if(runTime.outputTime())
         {
             HFDIBDEM.writeBodiesInfo();
         }
-        suplTime_ += writeBodiesInfoTime.timeIncrement();
 
-        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
-            << nl << endl;
-
-        Info<< " CFDTime_                 = " << CFDTime_             << " s \n" <<
-               " Solver suplementary time = " << suplTime_            << " s \n" << 
-               " DEMTime_                 = " << DEMTime_             << " s \n" << endl;
+        runTime.printExecutionTime(Info);
     }
 
     Info<< "End\n" << endl;

@@ -508,6 +508,10 @@ namespace Foam
             AxisOld_  = Axis_;
             omegaOld_ = omega_;
         }
+        
+        // function to update the average fluid density on the body
+        void updateRhoF(volScalarField& rho);
+        void updateRhoF(scalar rho);
 
         void writeIbInfo()
         {

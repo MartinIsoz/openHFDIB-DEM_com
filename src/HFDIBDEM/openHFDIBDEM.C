@@ -1398,3 +1398,17 @@ void openHFDIBDEM::setSolverInfo()
     solverInfo::setOnlyDEM(true);
 }
 //---------------------------------------------------------------------------//
+void openHFDIBDEM::updateBodiesRhoF(volScalarField& rho)
+{
+    forAll (immersedBodies_,bodyId)
+    {
+        immersedBodies_[bodyId].updateRhoF(rho);
+    }
+}
+void openHFDIBDEM::updateBodiesRhoF(scalar rho)
+{
+    forAll (immersedBodies_,bodyId)
+    {
+        immersedBodies_[bodyId].updateRhoF(rho);
+    }
+}

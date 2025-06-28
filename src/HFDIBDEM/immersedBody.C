@@ -90,7 +90,8 @@ a_(vector::zero),
 alpha_(vector::zero),
 totalAngle_(vector::zero),
 CoNum_(0.0),
-rhoF_(dimensionedScalar(transportProperties_.lookup("rho"))),
+//~ rhoF_(dimensionedScalar(transportProperties_.lookup("rho"))),
+rhoF_(1.0),
 bodyId_(bodyId),
 updateTorque_(false),
 bodyOperation_(0),
@@ -562,61 +563,61 @@ void immersedBody::updateCoupling
         refCoMList
     );
     
-    // calcualate viscous force and torque
+    //~ // calcualate viscous force and torque
     
-    forAll (intLists, i)
-    {
-        DynamicLabelList& intListI = intLists[i];
-        forAll (intListI, intCell)
-        {
-            label cellI = intListI[intCell];
-            
-            vector fCellPress = fPress[cellI];
-            //~ vector fCellPress = 0.0*fPress[cellI];
-            //~ vector fCellVisc  = 0.0*fVisc[cellI];
-            vector fCellVisc  = 0.0*fVisc[cellI];
-            
-            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
-            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
-        }
-    }
-    
-    forAll (surfLists, i)
-    {
-        DynamicLabelList& surfListI = surfLists[i];
-        forAll (surfListI, surfCell)
-        {
-            label cellI = surfListI[surfCell];
-            
-            vector fCellPress = body[cellI]*fPress[cellI];
-            vector fCellVisc  = body[cellI]*fVisc[cellI];
-    
-            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
-            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
-        }
-    }
-    
-    //~ List<DynamicLabelList> haloLists;
-    //~ haloLists.resize(1, haloCells_[Pstream::myProcNo()]);
-    //~ forAll (haloLists, i)
+    //~ forAll (intLists, i)
     //~ {
-        //~ DynamicLabelList& haloListI = haloLists[i];
-        //~ forAll (haloListI, haloCell)
+        //~ DynamicLabelList& intListI = intLists[i];
+        //~ forAll (intListI, intCell)
         //~ {
-            //~ label cellI = haloListI[haloCell];
+            //~ label cellI = intListI[intCell];
             
-            // vector fCellPress = body[cellI]*fPress[cellI];
-            //~ vector fCellPress = 0.0*fPress[cellI];
+            //~ vector fCellPress = fPress[cellI];
+            // vector fCellPress = 0.0*fPress[cellI];
             //~ vector fCellVisc  = fVisc[cellI];
+            // vector fCellVisc  = 0.0*fVisc[cellI];
             
-            // scalar scaleFact  = Foam::pow(mesh_.V()[cellI],0.3333);
-            // scalar scaleFact  = max(1.0-12.0*Foam::pow(mag(body[cellI]-0.5),4.0),0);//increase weight of surfCells
-            //~ scalar scaleFact  = Foam::exp(-Foam::pow(body[cellI] - 0.5,4.0)/(2.0*Foam::pow(0.15,2.0)));//increase weight of surfCells
-    
-            //~ FV -=  scaleFact*(fCellPress + fCellVisc)*mesh_.V()[cellI];
-            //~ TA -=  scaleFact*((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+            //~ FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            //~ TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
         //~ }
     //~ }
+    
+    //~ forAll (surfLists, i)
+    //~ {
+        //~ DynamicLabelList& surfListI = surfLists[i];
+        //~ forAll (surfListI, surfCell)
+        //~ {
+            //~ label cellI = surfListI[surfCell];
+            
+            //~ vector fCellPress = body[cellI]*fPress[cellI];
+            //~ vector fCellVisc  = body[cellI]*fVisc[cellI];
+    
+            //~ FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            //~ TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+        //~ }
+    //~ }
+    
+    List<DynamicLabelList> haloLists;
+    haloLists.resize(1, haloCells_[Pstream::myProcNo()]);
+    forAll (haloLists, i)
+    {
+        DynamicLabelList& haloListI = haloLists[i];
+        forAll (haloListI, haloCell)
+        {
+            label cellI = haloListI[haloCell];
+            
+            //~ // vector fCellPress = body[cellI]*fPress[cellI];
+            vector fCellPress = fPress[cellI];
+            vector fCellVisc  = fVisc[cellI];
+            
+            //~ // scalar scaleFact  = Foam::pow(mesh_.V()[cellI],0.3333);
+            //~ // scalar scaleFact  = max(1.0-12.0*Foam::pow(mag(body[cellI]-0.5),4.0),0);//increase weight of surfCells
+            scalar scaleFact  = Foam::exp(-Foam::pow(body[cellI] - 0.5,4.0)/(2.0*Foam::pow(0.15,2.0)));//increase weight of surfCells
+    
+            FV -=  scaleFact*(fCellPress + fCellVisc)*mesh_.V()[cellI];
+            TA -=  scaleFact*((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+        }
+    }
     
     reduce(FV, sumOp<vector>());
     reduce(TA, sumOp<vector>());
@@ -661,6 +662,9 @@ void immersedBody::updateMovementComp
 
         const uniformDimensionedVectorField& g =
             mesh_.lookupObject<uniformDimensionedVectorField>("g");
+            
+        //~ const meshObjects::gravity& g =                                 // should be compatible with OF2406 but I cannot make this work properly
+            //~ mesh_.lookupObject<meshObjects::gravity>("g");
         
         vector FG(vector::zero);
         if(!solverInfo::getOnlyDEM())
@@ -1241,4 +1245,68 @@ void immersedBody::checkBodyOp()
     }
 
     ibContactClass_->inContactWithStatic(false);
+}
+
+//---------------------------------------------------------------------------//
+void immersedBody::updateRhoF
+(
+    volScalarField& rho
+)
+{
+    scalar rhoFAux(0);
+    scalar bodyVol(0);
+    
+    List<DynamicLabelList> intLists;
+    List<DynamicLabelList> surfLists;
+    DynamicVectorList refCoMList;
+    
+    geomModel_->getReferencedLists(
+        intLists,
+        surfLists,
+        refCoMList
+    );
+    
+    // Note (MI): at the moment, the idea is to calculate this only
+    //            based on the surrounding fluid cells as the fluid
+    //            is not yet (20250628) correctly propagated into the
+    //            particle
+    
+    // compute the weighted average of density    
+    //~ forAll (intLists, i)
+    //~ {
+        //~ DynamicLabelList& intListI = intLists[i];
+        //~ forAll (intListI, intCell)
+        //~ {
+            //~ label cellI = intListI[intCell];
+            
+            //~ rhoFAux += rho[cellI]*mesh_.V()[cellI];
+            //~ bodyVol += mesh_.V()[cellI];
+        //~ }
+    //~ }
+    
+    forAll (surfLists, i)
+    {
+        DynamicLabelList& surfListI = surfLists[i];
+        forAll (surfListI, surfCell)
+        {
+            label cellI = surfListI[surfCell];
+            
+            rhoFAux += rho[cellI]*mesh_.V()[cellI];
+            bodyVol += mesh_.V()[cellI];
+        }
+    }
+    
+    reduce(rhoFAux, sumOp<scalar>());
+    reduce(bodyVol, sumOp<scalar>());
+    
+    
+    rhoF_ = rhoFAux/bodyVol;
+    Info << "Body " << bodyId_ << ": rhoF = " << rhoF_ << endl;
+}
+void immersedBody::updateRhoF
+(
+    scalar rho
+)
+{    
+    rhoF_ = rho;
 }
