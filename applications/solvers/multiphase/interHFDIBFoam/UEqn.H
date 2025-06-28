@@ -29,8 +29,8 @@ volVectorField neg_gradP_rgh(
     )
 );
 
-//~ f = surface*(UEqn.A()*Ui - UEqn.H() - neg_gradP_rgh);
-f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+f = surface*(UEqn.A()*Ui - UEqn.H() - neg_gradP_rgh);
+//~ f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
 f.correctBoundaryConditions();  
 
 //~ if (pimple.momentumPredictor())

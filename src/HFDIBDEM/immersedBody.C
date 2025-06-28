@@ -582,42 +582,42 @@ void immersedBody::updateCoupling
         //~ }
     //~ }
     
-    //~ forAll (surfLists, i)
-    //~ {
-        //~ DynamicLabelList& surfListI = surfLists[i];
-        //~ forAll (surfListI, surfCell)
-        //~ {
-            //~ label cellI = surfListI[surfCell];
-            
-            //~ vector fCellPress = body[cellI]*fPress[cellI];
-            //~ vector fCellVisc  = body[cellI]*fVisc[cellI];
-    
-            //~ FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
-            //~ TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
-        //~ }
-    //~ }
-    
-    List<DynamicLabelList> haloLists;
-    haloLists.resize(1, haloCells_[Pstream::myProcNo()]);
-    forAll (haloLists, i)
+    forAll (surfLists, i)
     {
-        DynamicLabelList& haloListI = haloLists[i];
-        forAll (haloListI, haloCell)
+        DynamicLabelList& surfListI = surfLists[i];
+        forAll (surfListI, surfCell)
         {
-            label cellI = haloListI[haloCell];
+            label cellI = surfListI[surfCell];
             
-            //~ // vector fCellPress = body[cellI]*fPress[cellI];
-            vector fCellPress = fPress[cellI];
-            vector fCellVisc  = fVisc[cellI];
-            
-            //~ // scalar scaleFact  = Foam::pow(mesh_.V()[cellI],0.3333);
-            //~ // scalar scaleFact  = max(1.0-12.0*Foam::pow(mag(body[cellI]-0.5),4.0),0);//increase weight of surfCells
-            scalar scaleFact  = Foam::exp(-Foam::pow(body[cellI] - 0.5,4.0)/(2.0*Foam::pow(0.15,2.0)));//increase weight of surfCells
+            vector fCellPress = body[cellI]*fPress[cellI];
+            vector fCellVisc  = body[cellI]*fVisc[cellI];
     
-            FV -=  scaleFact*(fCellPress + fCellVisc)*mesh_.V()[cellI];
-            TA -=  scaleFact*((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
         }
     }
+    
+    //~ List<DynamicLabelList> haloLists;
+    //~ haloLists.resize(1, haloCells_[Pstream::myProcNo()]);
+    //~ forAll (haloLists, i)
+    //~ {
+        //~ DynamicLabelList& haloListI = haloLists[i];
+        //~ forAll (haloListI, haloCell)
+        //~ {
+            //~ label cellI = haloListI[haloCell];
+            
+            // vector fCellPress = body[cellI]*fPress[cellI];
+            //~ vector fCellPress = fPress[cellI];
+            //~ vector fCellVisc  = fVisc[cellI];
+            
+            // scalar scaleFact  = Foam::pow(mesh_.V()[cellI],0.3333);
+            // scalar scaleFact  = max(1.0-12.0*Foam::pow(mag(body[cellI]-0.5),4.0),0);//increase weight of surfCells
+            //~ scalar scaleFact  = Foam::exp(-Foam::pow(body[cellI] - 0.5,4.0)/(2.0*Foam::pow(0.15,2.0)));//increase weight of surfCells
+    
+            //~ FV -=  scaleFact*(fCellPress + fCellVisc)*mesh_.V()[cellI];
+            //~ TA -=  scaleFact*((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+        //~ }
+    //~ }
     
     reduce(FV, sumOp<vector>());
     reduce(TA, sumOp<vector>());
