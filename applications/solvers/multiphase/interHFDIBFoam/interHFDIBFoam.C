@@ -212,10 +212,10 @@ int main(int argc, char *argv[])
         //~ fDragPress = 0.5*f/rho;
         //~ fDragVisc  = fDragPress;
         
-        fDragPress = -gradLambda*p/rho;
+        fDragPress = -gradLambda*p;
         
         volTensorField gradU = fvc::grad(U);
-        volTensorField tau = -mixture.nu()*(gradU + gradU.T());
+        volTensorField tau = -mixture.mu()*(gradU + gradU.T());
         fDragVisc = -gradLambda & tau;
         
         //~ fDragPress /= rho;

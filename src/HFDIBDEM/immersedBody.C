@@ -621,8 +621,8 @@ void immersedBody::updateCoupling
     
     reduce(FV, sumOp<vector>());
     reduce(TA, sumOp<vector>());
-    FV *= rhoF_.value();
-    TA *= rhoF_.value();
+    //~ FV *= rhoF_.value();
+    //~ TA *= rhoF_.value();
     
     FCoupling_ = couplingHistCoef_*forces(FV, TA) + (1.0-couplingHistCoef_)*FCouplingOld_;
     

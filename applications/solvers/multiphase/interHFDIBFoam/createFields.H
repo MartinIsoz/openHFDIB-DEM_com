@@ -160,7 +160,7 @@ volVectorField fDragPress
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    f/rho
+    f
 );
 
 InfoH<< "Reading field fDragVisc\n" << endl;
@@ -174,7 +174,7 @@ volVectorField fDragVisc
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    f/rho
+    f
 );
 
 typedef incompressibleInterPhaseTransportModel

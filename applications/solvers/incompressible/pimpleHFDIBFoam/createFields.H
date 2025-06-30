@@ -71,34 +71,6 @@ volVectorField f
     mesh
 );
 
-InfoH<< "Reading field fDragPress\n" << endl;
-volVectorField fDragPress
-(
-    IOobject
-    (
-        "fDragPress",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    f
-);
-
-InfoH<< "Reading field fDragVisc\n" << endl;
-volVectorField fDragVisc
-(
-    IOobject
-    (
-        "fDragVisc",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    f
-);
-
 InfoH<< "Reading field refineF\n" << endl;
 volScalarField refineF
 (
@@ -223,4 +195,33 @@ IOdictionary transportProperties
 );
 
 dimensionedScalar rho = dimensionedScalar(transportProperties.lookup("rho"));
+
+// hfdib-dem additional forces (fluid->solid interaction)
+InfoH<< "Reading field fDragPress\n" << endl;
+volVectorField fDragPress
+(
+    IOobject
+    (
+        "fDragPress",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    f*rho
+);
+
+InfoH<< "Reading field fDragVisc\n" << endl;
+volVectorField fDragVisc
+(
+    IOobject
+    (
+        "fDragVisc",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    f*rho
+);
 

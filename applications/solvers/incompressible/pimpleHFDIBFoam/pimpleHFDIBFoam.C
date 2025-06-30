@@ -189,10 +189,10 @@ int main(int argc, char *argv[])
         //~ fDragVisc  = -fvc::div(turbulence->devReff());
         //~ fDragVisc  = -gradLambda & turbulence->devReff();
         //~ fDragVisc  = f;
-        fDragPress = -0.5*omega1*(fvc::ddt(U) - f);
+        fDragPress = -0.5*omega1*(fvc::ddt(U) - f)*rho;
         fDragVisc  = fDragPress;
-        fDragPress+= (1.0-omega1)*fvc::grad(p);
-        fDragVisc += (1.0-omega1)*fvc::div(turbulence->devReff());      //this sign might actually be correct
+        fDragPress+= (1.0-omega1)*fvc::grad(p)*rho;
+        fDragVisc += (1.0-omega1)*fvc::div(turbulence->devReff())*rho;      //this sign might actually be correct
         //~ fDragPress*= 0.0;
         fDragVisc *= 0.0;
         for (label pass=0; pass<=fDragSmoothingIter; pass++)
