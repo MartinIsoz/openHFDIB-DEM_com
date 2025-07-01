@@ -62,14 +62,16 @@
     if (icAlpha > 0)
     {
         phic *= (1.0 - icAlpha);
-        phic += (mixture.cAlpha()*icAlpha)*fvc::interpolate(mag(U));
+        //~ phic += (mixture.cAlpha()*icAlpha)*fvc::interpolate(mag(U));
+        phic += (mixture.cAlpha()*icAlpha)*fvc::interpolate(mag(Ui));
     }
 
     // Add the optional shear compression contribution
     if (scAlpha > 0)
     {
         phic +=
-            scAlpha*mag(mesh.delta() & fvc::interpolate(symm(fvc::grad(U))));
+            //~ scAlpha*mag(mesh.delta() & fvc::interpolate(symm(fvc::grad(U))));
+            scAlpha*mag(mesh.delta() & fvc::interpolate(symm(fvc::grad(Ui))));
     }
 
 

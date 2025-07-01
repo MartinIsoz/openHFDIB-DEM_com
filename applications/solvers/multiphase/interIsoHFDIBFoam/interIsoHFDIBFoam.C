@@ -67,6 +67,11 @@ Description
 #include "fvcSmooth.H"
 #include "dynamicRefineFvMesh.H"
 
+// hfdib-dem inclusions
+#include "triSurfaceMesh.H"
+#include "openHFDIBDEM.H"
+#include "clockTime.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -94,6 +99,15 @@ int main(int argc, char *argv[])
 
     #include "porousCourantNo.H"
     #include "setInitialDeltaT.H"
+    
+    // hfdib-dem inclusions
+    #include "readDynMeshDict.H"
+    
+    // hfdib-dem code modification
+    Info << "\nInitializing HFDIBDEM\n" << endl;
+    openHFDIBDEM  HFDIBDEM(mesh);
+    HFDIBDEM.initialize(lambda,U,refineF,maxRefinementLevel,runTime.timeName());
+    #include "initialMeshRefinement.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     Info<< "\nStarting time loop\n" << endl;
@@ -108,6 +122,11 @@ int main(int argc, char *argv[])
         ++runTime;
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
+        
+        // hfdib-dem code modification
+        HFDIBDEM.createBodies(lambda,refineF);
+        HFDIBDEM.updateBodiesRhoF(rho);
+        HFDIBDEM.preUpdateBodies(lambda);
 
         // --- Pressure-velocity PIMPLE corrector loop
         while (pimple.loop())
@@ -183,8 +202,35 @@ int main(int argc, char *argv[])
                 turbulence->correct();
             }
         }
+        // hfdib-dem code modification
+        // --- compute viscous forces and update coupling
+        volVectorField gradLambda(fvc::grad(lambda));        
+        fDragPress = -gradLambda*p;
+        
+        volTensorField gradU = fvc::grad(U);
+        volTensorField tau = -mixture.mu()*(gradU + gradU.T());
+        fDragVisc = -gradLambda & tau;
+        
+        for (label pass=0; pass<=fDragSmoothingIter; pass++)
+        {
+            fDragPress = fvc::average(fvc::interpolate(fDragPress));
+            fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
+            fDragPress.correctBoundaryConditions();
+            fDragVisc.correctBoundaryConditions();
+        }
+        
+        HFDIBDEM.postUpdateBodies(lambda,gradLambda,fDragPress,fDragVisc);
+        HFDIBDEM.addRemoveBodies(lambda,U,refineF);
+        HFDIBDEM.updateBodiesRhoF(rho);
+        HFDIBDEM.updateDEM(lambda,refineF);
+        Info << "updated HFDIBDEM" << endl;
 
         runTime.write();
+        
+        if(runTime.outputTime())
+        {
+            HFDIBDEM.writeBodiesInfo();
+        }
 
         runTime.printExecutionTime(Info);
     }

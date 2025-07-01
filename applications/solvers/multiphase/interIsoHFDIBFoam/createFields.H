@@ -28,6 +28,82 @@ volVectorField U
     mesh
 );
 
+// hfdib-dem-related field creation
+InfoH<< "Reading field Ui\n" << endl;
+volVectorField Ui
+(
+    IOobject
+    (
+        "Ui",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    U
+);
+
+InfoH<< "Reading field lambda\n" << endl;
+volScalarField lambda
+(
+    IOobject
+    (
+        "lambda",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero",dimless,0)
+);
+
+InfoH<< "Reading field f\n" << endl;
+volVectorField f
+(
+    IOobject
+    (
+        "f",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+
+
+InfoH<< "Reading field refineF\n" << endl;
+volScalarField refineF
+(
+    IOobject
+    (
+        "refineF",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero",dimless,0)
+);
+
+InfoH<< "Reading field surface\n" << endl;
+volScalarField surface
+(
+    IOobject
+    (
+        "surface",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero",dimless,0)
+);
+
 #include "createPhi.H"
 
 
@@ -68,6 +144,37 @@ surfaceScalarField rhoPhi
         IOobject::NO_WRITE
     ),
     fvc::interpolate(rho)*phi
+);
+
+// hfdib-dem-related field creation
+// Note: this is kind of important to keep rhoF_*F in updateCoupling
+//       in immersedBody
+InfoH<< "Reading field fDragPress\n" << endl;
+volVectorField fDragPress
+(
+    IOobject
+    (
+        "fDragPress",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    f
+);
+
+InfoH<< "Reading field fDragVisc\n" << endl;
+volVectorField fDragVisc
+(
+    IOobject
+    (
+        "fDragVisc",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    f
 );
 
 
@@ -133,3 +240,43 @@ mesh.setFluxRequired(alpha1.name());
 #include "createPorosity.H"
 
 isoAdvection advector(alpha1, phi, U);
+
+// hfdib-dem-related dictionary loading
+IOdictionary HFDIBDEMDict
+(
+    IOobject
+    (
+        "HFDIBDEMDict",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+
+scalar thrSurf(SMALL);                                                  //surface threshold for identification 
+if(HFDIBDEMDict.found("surfaceThreshold"))
+{
+    thrSurf = scalar(readScalar(HFDIBDEMDict.lookup("surfaceThreshold")));
+}
+label fDragSmoothingIter(0);
+if(HFDIBDEMDict.found("nDragForceSmoothingIterations"))
+{
+    fDragSmoothingIter = label(readLabel(HFDIBDEMDict.lookup("nDragForceSmoothingIterations")));
+}
+label fDirectForcingIter(3);
+if(HFDIBDEMDict.found("nDirectForcingIterations"))
+{
+    fDirectForcingIter = label(readLabel(HFDIBDEMDict.lookup("nDirectForcingIterations")));
+}
+scalar tolUEqn(SMALL);                                                  //surface threshold for identification 
+if(HFDIBDEMDict.found("immersedUTolerance"))
+{
+    tolUEqn = scalar(readScalar(HFDIBDEMDict.lookup("immersedUTolerance")));
+    Info << "found tolerance for immersed U: " << tolUEqn << endl;
+    Info << "UEqn will loop until the tolerance is met or for: " << fDirectForcingIter << " iterations" << endl;
+}
+else
+{
+    Info << "no residual control for immmersed U tolerance set, UEqn will loop for: " << fDirectForcingIter << "iterations" << endl;
+}
