@@ -9,27 +9,29 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "constant";
-    object      transportProperties;
+    class       volScalarField;
+    location    "0";
+    object      p;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-phases          (water air);
 
-water
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
 {
-    transportModel  Newtonian;
-    nu              1e-06;
-    rho             1000;
+    top
+    {
+        type            fixedValue;
+        // value           uniform 0;
+        value           $internalField;
+    }
+    "bottom|left|right|front|back"
+    {
+        type            zeroGradient;
+    }
 }
 
-air
-{
-    transportModel  Newtonian;
-    nu              1.48e-05;
-    rho             1;
-}
-
-sigma            0.07;
 
 // ************************************************************************* //

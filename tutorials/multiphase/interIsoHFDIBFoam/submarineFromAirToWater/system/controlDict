@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  3.0.x                                 |
+|  \\    /   O peration     | Version:  dev                                        |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,26 +10,51 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      transportProperties;
+    location    "system";
+    object      controlDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-phases          (water air);
 
-water
-{
-    transportModel  Newtonian;
-    nu              1e-06;
-    rho             1000;
-}
+application     interIsoHFDIBFoam;
 
-air
-{
-    transportModel  Newtonian;
-    nu              1.48e-05;
-    rho             1;
-}
+startFrom       latestTime;
 
-sigma            0.07;
+startTime       0;
+
+stopAt          endTime;
+//~ stopAt          writeNow;
+
+endTime         0.5;
+
+deltaT          1e-4;
+
+writeControl    adjustableRunTime;
+//~ writeControl    timeStep;
+
+writeInterval   1e-2;
+//~ writeInterval   1;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  8;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   8;
+
+//~ maxCo           0.1;
+maxCo           0.8;
+maxAlphaCo      0.8;
+
+maxDeltaT       0.001;
+
+adjustTimeStep  yes;
+
+runTimeModifiable yes;
+
 
 // ************************************************************************* //
