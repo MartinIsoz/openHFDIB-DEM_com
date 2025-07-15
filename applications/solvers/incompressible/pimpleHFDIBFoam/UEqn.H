@@ -59,5 +59,5 @@ for (int i = 0; i < fDirectForcingIter; i++)
     }
 }
 
-UEqn -= lambda*f;
-//~ UEqn -= f;
+//~ UEqn -= lambda*f;
+UEqn -= f;

@@ -159,11 +159,13 @@ if(HFDIBDEMDict.found("surfaceThreshold"))
 {
     thrSurf = scalar(readScalar(HFDIBDEMDict.lookup("surfaceThreshold")));
 }
+Info << " -- forcing term will be active in cells with lambda > " << thrSurf << " times" << endl;
 label fDragSmoothingIter(5);
 if(HFDIBDEMDict.found("nDragForceSmoothingIterations"))
 {
     fDragSmoothingIter = label(readLabel(HFDIBDEMDict.lookup("nDragForceSmoothingIterations")));
 }
+Info << " -- will smooth the particle-fluid interaction forces " << fDragSmoothingIter << " times" << endl;
 label fDirectForcingIter(3);
 if(HFDIBDEMDict.found("nDirectForcingIterations"))
 {
@@ -173,12 +175,12 @@ scalar tolUEqn(SMALL);                                                  //surfac
 if(HFDIBDEMDict.found("immersedUTolerance"))
 {
     tolUEqn = scalar(readScalar(HFDIBDEMDict.lookup("immersedUTolerance")));
-    Info << "found tolerance for immersed U: " << tolUEqn << endl;
-    Info << "UEqn will loop until the tolerance is met or for: " << fDirectForcingIter << " iterations" << endl;
+    Info << " -- found tolerance for immersed U: " << tolUEqn << endl;
+    Info << " -- UEqn will loop until the tolerance is met or for: " << fDirectForcingIter << " iterations" << endl;
 }
 else
 {
-    Info << "no residual control for immmersed U tolerance set, UEqn will loop for: " << fDirectForcingIter << "iterations" << endl;
+    Info << " -- no residual control for immmersed U tolerance set, UEqn will loop for: " << fDirectForcingIter << "iterations" << endl;
 }
 
 // auxiliary variables from transportProperties
@@ -194,7 +196,14 @@ IOdictionary transportProperties
     )
 );
 
-dimensionedScalar rho = dimensionedScalar(transportProperties.lookup("rho"));
+const dimensionedScalar rho
+(
+    transportProperties.getOrDefault<dimensionedScalar>("rho", 1.0)
+);
+if (not transportProperties.found("rho"))
+{
+    Info << " -- no entry for fluid density found in transportProperties, defaulting to 1.0" << endl;
+}
 
 // hfdib-dem additional forces (fluid->solid interaction)
 InfoH<< "Reading field fDragPress\n" << endl;

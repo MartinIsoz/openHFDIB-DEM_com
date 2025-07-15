@@ -563,24 +563,24 @@ void immersedBody::updateCoupling
         refCoMList
     );
     
-    //~ // calcualate viscous force and torque
+    // calcualate viscous force and torque
     
-    //~ forAll (intLists, i)
-    //~ {
-        //~ DynamicLabelList& intListI = intLists[i];
-        //~ forAll (intListI, intCell)
-        //~ {
-            //~ label cellI = intListI[intCell];
+    forAll (intLists, i)
+    {
+        DynamicLabelList& intListI = intLists[i];
+        forAll (intListI, intCell)
+        {
+            label cellI = intListI[intCell];
             
-            //~ vector fCellPress = fPress[cellI];
-            // vector fCellPress = 0.0*fPress[cellI];
-            //~ vector fCellVisc  = fVisc[cellI];
-            // vector fCellVisc  = 0.0*fVisc[cellI];
+            // //~ vector fCellPress = fPress[cellI];
+            vector fCellPress = 0.0*fPress[cellI];
+            vector fCellVisc  = fVisc[cellI];
+            //~ // vector fCellVisc  = 0.0*fVisc[cellI];
             
-            //~ FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
-            //~ TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
-        //~ }
-    //~ }
+            FV -=  (fCellPress + fCellVisc)*mesh_.V()[cellI];
+            TA -=  ((mesh_.C()[cellI] - refCoMList[i])^fCellVisc)*mesh_.V()[cellI];
+        }
+    }
     
     forAll (surfLists, i)
     {
@@ -1248,7 +1248,7 @@ void immersedBody::checkBodyOp()
 }
 
 //---------------------------------------------------------------------------//
-void immersedBody::updateRhoF
+void immersedBody::updateRhoF                                           //variant_1 for VOF
 (
     volScalarField& rho
 )
@@ -1266,10 +1266,12 @@ void immersedBody::updateRhoF
         refCoMList
     );
     
-    // Note (MI): at the moment, the idea is to calculate this only
-    //            based on the surrounding fluid cells as the fluid
-    //            is not yet (20250628) correctly propagated into the
-    //            particle
+    // Note (MI): in this case, we do not want to take into account the
+    //            fluid composition inside the particle
+    // - we calculate the density of the surrounding fluid only from
+    //   surface cells
+    // - in this version, no correction for the presence of solid in the
+    //   surface cells is taken into account
     
     // compute the weighted average of density    
     //~ forAll (intLists, i)
@@ -1309,4 +1311,57 @@ void immersedBody::updateRhoF
 )
 {    
     rhoF_ = rho;
+}
+void immersedBody::updateRhoF                                           //variant_2 for VOF
+(
+    volScalarField& alpha,
+    volScalarField& body,
+    const scalar rho1,
+    const scalar rho2
+)
+{
+    scalar rhoFAux(0);
+    scalar bodyVol(0);
+    
+    List<DynamicLabelList> intLists;
+    List<DynamicLabelList> surfLists;
+    DynamicVectorList refCoMList;
+    
+    geomModel_->getReferencedLists(
+        intLists,
+        surfLists,
+        refCoMList
+    );
+    
+    // Note (MI): in this case, we do not want to take into account the
+    //            fluid composition inside the particle
+    // - we calculate the density of the surrounding fluid only from
+    //   surface cells
+    // - here, I am attempting to remove the solid volume from the alpha
+    //   field computation through a simple correction (alphaF)
+    // - this is probrably/most definitely not correct but might improve
+    //   the behavior over the variant _1
+    
+    forAll (surfLists, i)
+    {
+        DynamicLabelList& surfListI = surfLists[i];
+        forAll (surfListI, surfCell)
+        {
+            label cellI = surfListI[surfCell];
+            
+            scalar  alphaF = min(alpha[cellI]/(1.0 - body[cellI]), 1.0);
+            
+            rhoFAux += (alphaF*rho1 + (1.0 - alphaF*rho2))*mesh_.V()[cellI];
+            bodyVol += mesh_.V()[cellI];
+        }
+    }
+    
+    reduce(rhoFAux, sumOp<scalar>());
+    reduce(bodyVol, sumOp<scalar>());
+    
+    
+    rhoF_ = rhoFAux/bodyVol;
+    Info << "Body " << bodyId_ << ": rhoF = " << rhoF_ << endl;
+    
+    
 }

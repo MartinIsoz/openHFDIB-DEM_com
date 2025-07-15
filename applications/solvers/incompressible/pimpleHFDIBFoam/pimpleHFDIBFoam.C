@@ -177,24 +177,13 @@ int main(int argc, char *argv[])
         
         // --- compute viscous forces and update coupling
         volVectorField gradLambda(fvc::grad(lambda));
-        //~ scalar omega1(0.5);                                             //formulation weight
-        //~ scalar omega1(0.5);                                             //formulation weight
-        scalar omega1(0.0);                                             //formulation weight
-        //~ scalar omega1(1.0);                                             //formulation weight
         
-        //~ fDragPress = fvc::grad(p);
-        //~ fDragPress = -fvc::grad(lambda)*p;
-        //~ fDragPress = -0.0*gradLambda*p;
-        //~ fDragPress = -fvc::ddt(U);
-        //~ fDragVisc  = -fvc::div(turbulence->devReff());
-        //~ fDragVisc  = -gradLambda & turbulence->devReff();
-        //~ fDragVisc  = f;
-        fDragPress = -0.5*omega1*(fvc::ddt(U) - f)*rho;
-        fDragVisc  = fDragPress;
-        fDragPress+= (1.0-omega1)*fvc::grad(p)*rho;
-        fDragVisc += (1.0-omega1)*fvc::div(turbulence->devReff())*rho;      //this sign might actually be correct
-        //~ fDragPress*= 0.0;
-        fDragVisc *= 0.0;
+        //~ fDragVisc = (f - fvc::grad(p))*rho;
+        fDragVisc = (f - fvc::grad(p) - fvc::ddt(U))*rho;
+        fDragPress= -gradLambda*p*rho;
+        
+        //~ fDragVisc *= 2.0;
+        
         for (label pass=0; pass<=fDragSmoothingIter; pass++)
         {
             fDragPress = fvc::average(fvc::interpolate(fDragPress));

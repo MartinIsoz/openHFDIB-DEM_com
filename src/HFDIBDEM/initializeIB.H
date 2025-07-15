@@ -128,10 +128,7 @@ if (immersedDict_.found("timesToSetStatic"))
 // set up body geometry
 geomModel_->setIntSpan(intSpan_);
 geomModel_->setSdBasedLambda(sdBasedLambda_);
-geomModel_->setRhoS(dimensionedScalar(immersedDict_.lookup("rho")));    //OF.com: warning, deprecated
-// Alternative (PK):
-//~ dimensionedScalar rho(immersedDict_.lookup("rho"));
-//~ geomModel_->setRhoS(rho);
+geomModel_->setRhoS(dimensionedScalar(immersedDict_.get<dimensionedScalar>("rho")));
 
 string material = word(immersedDict_.lookup("material"));
 

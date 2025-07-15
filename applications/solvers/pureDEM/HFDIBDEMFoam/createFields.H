@@ -87,10 +87,14 @@ IOdictionary transportProperties
     )
 );
 
-dimensionedScalar rho = dimensionedScalar(
-  transportProperties.lookup("rho")
+const dimensionedScalar rho
+(
+    transportProperties.getOrDefault<dimensionedScalar>("rho", 1.0)
 );
-
+if (not transportProperties.found("rho"))
+{
+    Info << " -- no entry for fluid density found in transportProperties, defaulting to 1.0" << endl;
+}
 IOdictionary HFDIBDEMDict
 (
     IOobject

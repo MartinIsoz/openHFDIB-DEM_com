@@ -1412,3 +1412,16 @@ void openHFDIBDEM::updateBodiesRhoF(scalar rho)
         immersedBodies_[bodyId].updateRhoF(rho);
     }
 }
+void openHFDIBDEM::updateBodiesRhoF
+(
+    volScalarField& alpha,
+    volScalarField& body,
+    const scalar rho1,
+    const scalar rho2
+)
+{
+    forAll (immersedBodies_,bodyId)
+    {
+        immersedBodies_[bodyId].updateRhoF(alpha,body,rho1,rho2);
+    }
+}

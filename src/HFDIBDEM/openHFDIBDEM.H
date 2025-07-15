@@ -216,6 +216,13 @@ namespace Foam
     
     void updateBodiesRhoF(volScalarField& rho);
     void updateBodiesRhoF(scalar rho);
+    void updateBodiesRhoF
+    (
+        volScalarField& alpha,
+        volScalarField& body,
+        const scalar rho1,
+        const scalar rho2
+    );
 
  };
 }

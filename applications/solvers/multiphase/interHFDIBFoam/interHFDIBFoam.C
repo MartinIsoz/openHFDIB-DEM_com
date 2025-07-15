@@ -123,7 +123,8 @@ int main(int argc, char *argv[])
         
         // hfdib-dem code modification
         HFDIBDEM.createBodies(lambda,refineF);
-        HFDIBDEM.updateBodiesRhoF(rho);
+        //~ HFDIBDEM.updateBodiesRhoF(rho);
+        HFDIBDEM.updateBodiesRhoF(alpha1,lambda,rho1.value(),rho2.value());
         HFDIBDEM.preUpdateBodies(lambda);
 
         // --- Pressure-velocity PIMPLE corrector loop
