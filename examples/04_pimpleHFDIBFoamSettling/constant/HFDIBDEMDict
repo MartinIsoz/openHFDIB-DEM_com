@@ -26,7 +26,8 @@ interpolationSchemes
 // fluid flow auxiliary settings
 surfaceThreshold                1e-6;
 nDragForceSmoothingIterations   0;
-nDirectForcingIterations        3;
+nDirectForcingIterations        10;
+immersedUTolerance              1e-4;
 
 // DEM settings
 stepDEM     1;
