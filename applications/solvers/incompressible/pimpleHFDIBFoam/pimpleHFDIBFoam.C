@@ -178,8 +178,8 @@ int main(int argc, char *argv[])
         // --- compute viscous forces and update coupling
         volVectorField gradLambda(fvc::grad(lambda));
         
-        //~ fDragVisc = (f - fvc::grad(p))*rho;
-        fDragVisc = (f - fvc::grad(p) + fvc::ddt(U))*rho;
+        fDragVisc = (f - fvc::grad(p))*rho;
+        //~ fDragVisc = (f - fvc::grad(p) + fvc::ddt(U))*rho;
         fDragPress= -gradLambda*p*rho;
         
         //~ fDragVisc *= 2.0;
