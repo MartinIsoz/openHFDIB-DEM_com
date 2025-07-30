@@ -23,15 +23,9 @@ volScalarField UA(UEqn.A());
 HFDIBDEM.interpolateIB(U,Ui,lambda);
 Ui.correctBoundaryConditions();
 
+// Direct forcing term computation
 f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
-f.correctBoundaryConditions();  
-
-//~ if (pimple.momentumPredictor())
-//~ {
-    //~ solve(UEqn == -fvc::grad(p) + f);
-
-    //~ fvOptions.correct(U);
-//~ }
+f.correctBoundaryConditions(); 
 
 for (int i = 0; i < fDirectForcingIter; i++)
 {
@@ -40,18 +34,19 @@ for (int i = 0; i < fDirectForcingIter; i++)
 
     fvOptions.correct(U);
     
-    HFDIBDEM.interpolateIB(U,Ui,lambda);
-    
     if (max(mag(surface*(Ui - U))).value() < tolUEqn)
     {
         Info << "HFDIBDEM: U converged to Ui within max tolerance " << tolUEqn << endl;
         break;
     }
     
-    Ui.correctBoundaryConditions();
-    //~ f = surface*(UEqn.A()*Ui - UEqn.H() + fvc::grad(p));
+    
     f += 0.8*surface*(Ui - U)/runTime.deltaT();                         //MI: in this loop, correct the force incrementaly
     f.correctBoundaryConditions(); 
+    
+    // Use the updated movement to change Ui
+    HFDIBDEM.interpolateIB(U,Ui,lambda);
+    Ui.correctBoundaryConditions();
     
     if (i == fDirectForcingIter - 1)
     {
@@ -59,5 +54,5 @@ for (int i = 0; i < fDirectForcingIter; i++)
     }
 }
 
-//~ UEqn -= lambda*f;
+// Asign the current f as RHS for momentum equation
 UEqn -= f;

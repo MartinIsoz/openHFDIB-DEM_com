@@ -542,6 +542,51 @@ void immersedBody::updateHaloCells
         iterCount++;
     }
 }
+void immersedBody::updateHaloCells
+(
+    volVectorField& gradBody,
+    volScalarField& body
+)
+{
+    // clear halo cells
+    haloCells_[Pstream::myProcNo()].clear(); 
+    
+    // initialize the marchingCube algorithm
+    autoPtr<DynamicLabelList> nextToCheck(new DynamicLabelList);
+    autoPtr<DynamicLabelList> auxToCheck(new DynamicLabelList);
+        
+    // initialize halo cells
+    nextToCheck().append(geomModel_->getSurfaceCellList()[Pstream::myProcNo()]);
+    labelHashSet checkedCells;
+            
+    // run the marchingCube
+    label iterCount(0);
+    label iterMax(mesh_.nCells());
+    while(nextToCheck().size() > 0 && iterCount < iterMax)
+    {
+        auxToCheck().clear();
+        forAll(nextToCheck(), cellI)
+        {
+            label cellId = nextToCheck()[cellI];
+            if(!checkedCells.found(cellId))
+            {
+                checkedCells.insert(cellId);
+                vector pCVec(mesh_.C()[cellId] - geomModel_->getCoM());
+                //~ if(mag(gradBody[cellI]) > SMALL && (-gradBody[cellI] & pCVec) > SMALL)
+                if(mag(gradBody[cellId]) > SMALL and body[cellId] < SMALL)
+                {
+                    //~ Pout << mag(gradBody[cellId])*Foam::pow(mesh_.V()[cellId],0.3333) << endl;
+                    haloCells_[Pstream::myProcNo()].append(cellId);
+                    auxToCheck().append(mesh_.cellCells()[cellId]);
+                }
+            }
+        }
+        autoPtr<DynamicLabelList> helpPtr(nextToCheck.ptr());
+        nextToCheck.reset(auxToCheck.ptr());
+        auxToCheck = std::move(helpPtr);
+        iterCount++;
+    }
+}
 //---------------------------------------------------------------------------//
 void immersedBody::updateCoupling
 (
@@ -557,7 +602,7 @@ void immersedBody::updateCoupling
     const vector& CoM(geomModel_->getCoM());
     
     //~ const DynamicLabelList& intList(getInternalCellList()[Pstream::myProcNo()]);
-    //~ const DynamicLabelList& surfList(getSurfaceCellList()[Pstream::myProcNo()]);
+    const DynamicLabelList& surfList(getSurfaceCellList()[Pstream::myProcNo()]);
 
     //~ forAll(intList, i)
     //~ {
@@ -567,19 +612,20 @@ void immersedBody::updateCoupling
         //~ vector fCellVisc  = fVisc[cellI];
         
         //~ FV -= (fCellPress + fCellVisc)*mesh_.V()[cellI];
+        //~ FV -= (fCellVisc)*mesh_.V()[cellI];
         //~ TA -= ((mesh_.C()[cellI] - CoM)^fCellVisc)*mesh_.V()[cellI];
     //~ }
 
-    //~ forAll(surfList, i)
-    //~ {
-        //~ label cellI = surfList[i];
+    forAll(surfList, i)
+    {
+        label cellI = surfList[i];
         
-        //~ vector fCellPress = body[cellI]*fPress[cellI];
-        //~ vector fCellVisc  = body[cellI]*fVisc[cellI];
+        vector fCellPress = body[cellI]*fPress[cellI];
+        vector fCellVisc  = body[cellI]*fVisc[cellI];
         
-        //~ FV -= (fCellPress + fCellVisc)*mesh_.V()[cellI];
-        //~ TA -= ((mesh_.C()[cellI] - CoM)^fCellVisc)*mesh_.V()[cellI];
-    //~ }
+        FV -= (fCellPress + fCellVisc)*mesh_.V()[cellI];
+        TA -= ((mesh_.C()[cellI] - CoM)^fCellVisc)*mesh_.V()[cellI];
+    }
     
     
     const DynamicLabelList& haloList(haloCells_[Pstream::myProcNo()]);
@@ -642,9 +688,6 @@ void immersedBody::updateMovementComp
         const uniformDimensionedVectorField& g =
             mesh_.lookupObject<uniformDimensionedVectorField>("g");
             
-        //~ const meshObjects::gravity& g =                                 // should be compatible with OF2406 but I cannot make this work properly
-            //~ mesh_.lookupObject<meshObjects::gravity>("g");
-        
         vector FG(vector::zero);
         if(!solverInfo::getOnlyDEM())
             FG = geomModel_->getM0()*(1.0-rhoF_.value()
@@ -671,6 +714,7 @@ void immersedBody::updateMovementComp
             InfoH << iB_Info <<"-- body "<< bodyId_ <<" G-B Force       : " << FG << endl;
             
             a_  = F/(geomModel_->getM0());
+            
             // update body linear velocity
             Vel_ = Vel + deltaT*a_;
             InfoH << iB_Info <<"-- body "<< bodyId_ <<" accelaration  : " << a_ << endl;

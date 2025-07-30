@@ -58,7 +58,7 @@ while (pimple.correctNonOrthogonal())
 // Explicitly relax pressure for momentum corrector
 p.relax();
 
-//~ U = HbyA - rAtU*fvc::grad(p) + rAU*f;
+// Momentum corrector
 U = HbyA - rAtU*fvc::grad(p);
 U.correctBoundaryConditions();
 fvOptions.correct(U);
@@ -69,29 +69,6 @@ fvc::correctUf(Uf, U, phi);
 // Make the fluxes relative to the mesh motion
 fvc::makeRelative(phi, U);
 
-//~ fDragPress = fvc::grad(p);
-//~ fDragVisc  = -fvc::div(turbulence->devReff());
-//~ for (label pass=0; pass<=fDragSmoothingIter; pass++)
-//~ {
-    //~ fDragPress = fvc::average(fvc::interpolate(fDragPress));
-    //~ fDragVisc  = fvc::average(fvc::interpolate(fDragVisc));
-    //~ fDragPress.correctBoundaryConditions();
-    //~ fDragVisc.correctBoundaryConditions();
-//~ }
-
-//~ HFDIBDEM.updateFSCoupling(lambda,fDragPress,fDragVisc);                 //MI: dubious line
+// Update U based on new U values and old Ui
 HFDIBDEM.interpolateIB(U,Ui,lambda);
 
-//Ui -= (Ui - U)*(1-lambda);
-
-forAll(surface, sI)
-{
-    if (lambda[sI] > thrSurf)
-        surface[sI] = 1;
-    else
-        surface[sI] = 0;
-}
-
-//~ f += 0.8*surface*(Ui - U)/runTime.deltaT();
-//~ f = surface*(UA*Ui - UEqn.H() + fvc::grad(p));
-//~ f.correctBoundaryConditions();

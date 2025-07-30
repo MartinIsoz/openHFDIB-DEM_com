@@ -119,6 +119,21 @@ int main(int argc, char *argv[])
         clockTime preUpdateBodiesTime; // OS time efficiency testing
         HFDIBDEM.preUpdateBodies(lambda);
         suplTime_ += preUpdateBodiesTime.timeIncrement(); // OS time efficiency testing
+        
+        // --- pre-compute gradient of lambda field (force updates)
+        volVectorField gradLambda(fvc::grad(lambda));
+        gradLambda.correctBoundaryConditions();        
+        
+        // --- construct surface field where the momentum source should
+        //     be switched on
+        forAll(surface, sI)
+        {
+            if (lambda[sI] > thrSurf)
+                surface[sI] = 1;
+            else
+                surface[sI] = 0;
+        }
+        surface.correctBoundaryConditions();
 
         clockTime pimpleRunClockTime; // OS time efficiency testing
         // --- Pressure-velocity PIMPLE corrector loop
@@ -152,9 +167,19 @@ int main(int argc, char *argv[])
                     lambda *= 0.0;
 
                     HFDIBDEM.recreateBodies(lambda,refineF);
+                    
+                    volVectorField gradLambda(fvc::grad(lambda));                    
+                    forAll(surface, sI)
+                    {
+                        if (lambda[sI] > thrSurf)
+                            surface[sI] = 1;
+                        else
+                            surface[sI] = 0;
+                    }
+                    gradLambda.correctBoundaryConditions();
+                    surface.correctBoundaryConditions();
                 }
 
-                //~ f *= lambda;
             }
 
             #include "UEqn.H"
@@ -175,14 +200,11 @@ int main(int argc, char *argv[])
         Info << "updating HFDIBDEM" << endl;
         clockTime postUpdateBodiesTime;
         
-        // --- compute viscous forces and update coupling
-        volVectorField gradLambda(fvc::grad(lambda));
-        
         fDragVisc = (f - fvc::grad(p))*rho;
-        //~ fDragVisc = (f - fvc::grad(p) + fvc::ddt(U))*rho;
         fDragPress= -gradLambda*p*rho;
         
-        //~ fDragVisc *= 2.0;
+        fDragPress.correctBoundaryConditions();
+        fDragVisc.correctBoundaryConditions();
         
         for (label pass=0; pass<=fDragSmoothingIter; pass++)
         {

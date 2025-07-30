@@ -269,6 +269,11 @@ namespace Foam
         (
             volVectorField& gradBody
         );
+        void updateHaloCells
+        (
+            volVectorField& gradBody,
+            volScalarField& body
+        );
         
         void resetCouplingHistory()
         {
